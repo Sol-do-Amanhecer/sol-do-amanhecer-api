@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: sol-do-amanhecer-api
+  profiles:
+    active: test
