@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: sol-do-amanhecer-api
+
+  profiles:
+    active: homol
+
+  datasource:
+    url: jdbc:postgresql://sol-do-amanhecer:5432/soldoamanhecer?createDatabaseIfNotExist=true
+    username: root
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
