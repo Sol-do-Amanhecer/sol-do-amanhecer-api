@@ -1,0 +1,26 @@
+package br.com.sol_do_amanhecer.config;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class SwaggerConfig {
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Api - Sol do Amanhecer")
+                        .version("v1")
+                        .description("Api da Ong do Sol do Amanhecer")
+                        .termsOfService("https://github.com/Sol-do-Amanhecer")
+                        .license(
+                                new License()
+                                        .name("Apache 2.0")
+                                        .url("https://github.com/Sol-do-Amanhecer")
+                        ));
+    }
+}
