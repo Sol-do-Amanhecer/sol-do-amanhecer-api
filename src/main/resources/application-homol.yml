@@ -2,11 +2,8 @@ spring:
   application:
     name: sol-do-amanhecer-api
 
-  profiles:
-    active: homol
-
   datasource:
-    url: jdbc:postgresql://sol-do-amanhecer:5432/soldoamanhecer?createDatabaseIfNotExist=true
+    url: jdbc:postgresql://postgres-service:5432/soldoamanhecer?createDatabaseIfNotExist=true
     username: root
     password: root
     driver-class-name: org.postgresql.Driver
