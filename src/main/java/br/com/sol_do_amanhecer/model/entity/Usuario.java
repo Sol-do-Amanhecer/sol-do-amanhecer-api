@@ -29,13 +29,13 @@ public class Usuario implements UserDetails, Serializable {
     private String senha;
 
     @Column(name = "conta_expirada", nullable = false)
-    private Boolean contaExpirada;
+    private Boolean contaExpirada = false;
 
     @Column(name = "conta_bloqueada", nullable = false)
-    private Boolean contaBloqueada;
+    private Boolean contaBloqueada = false;
 
     @Column(name = "credenciais_expiradas", nullable = false)
-    private Boolean credenciaisExpiradas;
+    private Boolean credenciaisExpiradas = false;
 
     @Column(name = "ativo", nullable = false)
     private Boolean ativo;
