@@ -22,9 +22,9 @@ jobs:
 
             - name: Deploy na VPS
               run: |
-                  ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
+                  ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
                     cd ${{ secrets.VPS_BACKEND_PATH }}
                     git pull origin main
-                    docker-compose pull
-                    docker-compose up -d
+                    docker compose down
+                    docker compose up -d --build
                   EOF
