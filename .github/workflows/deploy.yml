@@ -20,7 +20,7 @@ jobs:
                   chmod 600 ~/.ssh/id_rsa
                   ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-            - name: Deploy VPS
+            - name: Deploy na VPS
               run: |
                   ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
                     cd ${{ secrets.VPS_BACKEND_PATH }}
