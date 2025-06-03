@@ -21,9 +21,11 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
+
     private final Logger LOGGER = LoggerFactory.getLogger(UsuarioServiceImpl.class);
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UsuarioMapper usuarioMapper = UsuarioMapper.INSTANCE;
 
     @Override
     public UserDetails loadUserByUsername(String usuario) throws UsernameNotFoundException {
@@ -32,7 +34,7 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
         if (userDetails != null) {
             return userDetails;
         } else {
-            throw new UsernameNotFoundException("Usuário" + usuario + " não encontrado");
+            throw new UsernameNotFoundException("Usuário " + usuario + " não encontrado");
         }
     }
 
@@ -41,8 +43,8 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
         LOGGER.info("Buscando usuario por id");
         Usuario usuarioEntity = this.usuarioRepository
                 .findById(id)
-                .orElseThrow(() -> new UsuarioException("User not found with ID: " + id));
-        return UsuarioMapper.INSTANCE.entityParaDto(usuarioEntity);
+                .orElseThrow(() -> new UsuarioException("Usuário não encontrado com ID: " + id));
+        return usuarioMapper.entityParaDto(usuarioEntity);
     }
 
     @Override
@@ -51,17 +53,17 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
         return this.usuarioRepository
                 .findAll()
                 .stream()
-                .map(UsuarioMapper.INSTANCE::entityParaDto)
+                .map(usuarioMapper::entityParaDto)
                 .toList();
     }
 
     @Override
     public UsuarioDTO criar(UsuarioDTO userDTO) {
         LOGGER.info("Criando um usuario");
-        Usuario userEntity = UsuarioMapper.INSTANCE.dtoParaEntity(userDTO);
+        Usuario userEntity = usuarioMapper.dtoParaEntity(userDTO);
         userEntity.setSenha(passwordEncoder.encode(userDTO.getSenha()));
         this.usuarioRepository.save(userEntity);
-        return UsuarioMapper.INSTANCE.entityParaDto(userEntity);
+        return usuarioMapper.entityParaDto(userEntity);
     }
 
     @Override
@@ -69,7 +71,7 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
         LOGGER.info("Atualizando um usuario");
         Usuario userEntity = this.usuarioRepository
                 .findById(id)
-                .orElseThrow(() -> new UsuarioException("User not found with ID: " + id));
+                .orElseThrow(() -> new UsuarioException("Usuário não encontrado com ID: " + id));
         userEntity.setUsuario(userDTO.getUsuario());
         userEntity.setSenha(passwordEncoder.encode(userDTO.getSenha()));
         usuarioRepository.save(userEntity);
@@ -80,7 +82,7 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
         LOGGER.info("Removendo um usuario");
         Usuario userEntity = this.usuarioRepository
                 .findById(id)
-                .orElseThrow(() -> new UsuarioException("User not found with ID: " + id));
+                .orElseThrow(() -> new UsuarioException("Usuário não encontrado com ID: " + id));
         this.usuarioRepository.delete(userEntity);
     }
 }

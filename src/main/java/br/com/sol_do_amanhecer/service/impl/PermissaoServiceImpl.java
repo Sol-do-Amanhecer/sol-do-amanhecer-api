@@ -14,20 +14,21 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-
 @Service
 @RequiredArgsConstructor
 public class PermissaoServiceImpl implements PermissaoService {
+
     private final Logger LOGGER = LoggerFactory.getLogger(PermissaoServiceImpl.class);
     private final PermissaoRepository permissaoRepository;
+    private final PermissaoMapper permissaoMapper = PermissaoMapper.INSTANCE;
 
     @Override
     public PermissaoDTO buscarPorId(UUID id) {
         LOGGER.info("Buscando permissão por id");
-        Permissao PermissaoEntity = this.permissaoRepository
+        Permissao permissaoEntity = this.permissaoRepository
                 .findById(id)
-                .orElseThrow(() -> new PermissaoException("Permissao not found with ID: " + id));
-        return PermissaoMapper.INSTANCE.entityParaDto(PermissaoEntity);
+                .orElseThrow(() -> new PermissaoException("Permissão não encontrada com ID: " + id));
+        return permissaoMapper.entityParaDto(permissaoEntity);
     }
 
     @Override
@@ -36,34 +37,34 @@ public class PermissaoServiceImpl implements PermissaoService {
         return this.permissaoRepository
                 .findAll()
                 .stream()
-                .map(PermissaoMapper.INSTANCE::entityParaDto)
+                .map(permissaoMapper::entityParaDto)
                 .toList();
     }
 
     @Override
-    public PermissaoDTO criar(PermissaoDTO PermissaoDTO) {
+    public PermissaoDTO criar(PermissaoDTO permissaoDTO) {
         LOGGER.info("Criando uma permissão");
-        Permissao PermissaoEntity = PermissaoMapper.INSTANCE.dtoParaEntity(PermissaoDTO);
-        this.permissaoRepository.save(PermissaoEntity);
-        return PermissaoMapper.INSTANCE.entityParaDto(PermissaoEntity);
+        Permissao permissaoEntity = permissaoMapper.dtoParaEntity(permissaoDTO);
+        this.permissaoRepository.save(permissaoEntity);
+        return permissaoMapper.entityParaDto(permissaoEntity);
     }
 
     @Override
-    public void atualizar(UUID id, PermissaoDTO PermissaoDTO) {
+    public void atualizar(UUID id, PermissaoDTO permissaoDTO) {
         LOGGER.info("Atualizar uma permissão");
-        Permissao PermissaoEntity = this.permissaoRepository
+        Permissao permissaoEntity = this.permissaoRepository
                 .findById(id)
-                .orElseThrow(() -> new PermissaoException("Permissao not found with ID: " + id));
-        PermissaoEntity.setDescricao(PermissaoDTO.getDescricao());
-        permissaoRepository.save(PermissaoEntity);
+                .orElseThrow(() -> new PermissaoException("Permissão não encontrada com ID: " + id));
+        permissaoEntity.setDescricao(permissaoDTO.getDescricao());
+        permissaoRepository.save(permissaoEntity);
     }
 
     @Override
     public void remover(UUID id) {
         LOGGER.info("Remover uma permissão");
-        Permissao PermissaoEntity = this.permissaoRepository
+        Permissao permissaoEntity = this.permissaoRepository
                 .findById(id)
-                .orElseThrow(() -> new PermissaoException("Permissao not found with ID: " + id));
-        this.permissaoRepository.delete(PermissaoEntity);
+                .orElseThrow(() -> new PermissaoException("Permissão não encontrada com ID: " + id));
+        this.permissaoRepository.delete(permissaoEntity);
     }
 }
