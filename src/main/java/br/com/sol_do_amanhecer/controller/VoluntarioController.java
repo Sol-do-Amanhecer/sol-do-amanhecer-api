@@ -1,7 +1,8 @@
 package br.com.sol_do_amanhecer.controller;
 
 import br.com.sol_do_amanhecer.model.dto.VoluntarioDTO;
-import br.com.sol_do_amanhecer.model.dto.VoluntarioRequest;
+import br.com.sol_do_amanhecer.model.dto.VoluntarioRequestDTO;
+import br.com.sol_do_amanhecer.model.dto.VoluntarioResponseDTO;
 import br.com.sol_do_amanhecer.service.VoluntarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,30 +30,30 @@ public class VoluntarioController implements Serializable {
 
     @PostMapping(value = CRIAR_VOLUNTARIO)
     @Operation(summary = "Criar um novo voluntário", description = "Adiciona um novo voluntário")
-    public ResponseEntity<VoluntarioDTO> criar(@RequestBody VoluntarioRequest voluntarioRequest) {
+    public ResponseEntity<VoluntarioDTO> criar(@RequestBody VoluntarioRequestDTO voluntarioRequestDTO) {
         LOGGER.debug("Requisição para criar voluntário");
         VoluntarioDTO createdVoluntarioDTO = this.voluntarioService.criar(
-                voluntarioRequest.getVoluntarioDTO(),
-                voluntarioRequest.getEmailDTOList(),
-                voluntarioRequest.getTelefoneDTOList(),
-                voluntarioRequest.getFormularioDTO()
+                voluntarioRequestDTO.getVoluntarioDTO(),
+                voluntarioRequestDTO.getEmailDTOList(),
+                voluntarioRequestDTO.getTelefoneDTOList(),
+                voluntarioRequestDTO.getFormularioDTO()
         );
         return ResponseEntity.ok().body(createdVoluntarioDTO);
     }
 
     @GetMapping(value = VOLUNTARIO_POR_ID)
     @Operation(summary = "Buscar voluntário por ID", description = "Busca um voluntário pelo ID")
-    public ResponseEntity<VoluntarioDTO> buscarPorId(@PathVariable(value = "id") UUID id) {
+    public ResponseEntity<VoluntarioResponseDTO> buscarPorId(@PathVariable(value = "id") UUID id) {
         LOGGER.debug("Requisição para buscar voluntário por ID");
-        VoluntarioDTO voluntarioDTO = this.voluntarioService.buscarPorId(id);
+        VoluntarioResponseDTO voluntarioDTO = this.voluntarioService.buscarPorId(id);
         return ResponseEntity.ok().body(voluntarioDTO);
     }
 
     @GetMapping(value = TODOS_VOLUNTARIOS)
     @Operation(summary = "Buscar todos os voluntários", description = "Retorna uma lista de todos os voluntários")
-    public ResponseEntity<List<VoluntarioDTO>> buscarTodos() {
+    public ResponseEntity<List<VoluntarioResponseDTO>> buscarTodos() {
         LOGGER.debug("Requisição para buscar todos os voluntários");
-        List<VoluntarioDTO> voluntarios = this.voluntarioService.buscarTodos();
+        List<VoluntarioResponseDTO> voluntarios = this.voluntarioService.buscarTodos();
         return ResponseEntity.ok().body(voluntarios);
     }
 
@@ -60,14 +61,14 @@ public class VoluntarioController implements Serializable {
     @Operation(summary = "Atualizar um voluntário", description = "Atualiza um voluntário existente")
     public ResponseEntity<Void> atualizar(
             @PathVariable(value = "id") UUID id,
-            @RequestBody VoluntarioRequest voluntarioRequest) {
+            @RequestBody VoluntarioRequestDTO voluntarioRequestDTO) {
         LOGGER.debug("Requisição para atualizar voluntário");
         this.voluntarioService.atualizar(
                 id,
-                voluntarioRequest.getVoluntarioDTO(),
-                voluntarioRequest.getEmailDTOList(),
-                voluntarioRequest.getTelefoneDTOList(),
-                voluntarioRequest.getFormularioDTO()
+                voluntarioRequestDTO.getVoluntarioDTO(),
+                voluntarioRequestDTO.getEmailDTOList(),
+                voluntarioRequestDTO.getTelefoneDTOList(),
+                voluntarioRequestDTO.getFormularioDTO()
         );
         return ResponseEntity.ok().build();
     }

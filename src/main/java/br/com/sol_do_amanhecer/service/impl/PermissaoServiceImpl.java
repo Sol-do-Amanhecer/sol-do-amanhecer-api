@@ -6,6 +6,7 @@ import br.com.sol_do_amanhecer.model.entity.Permissao;
 import br.com.sol_do_amanhecer.model.mapper.PermissaoMapper;
 import br.com.sol_do_amanhecer.repository.PermissaoRepository;
 import br.com.sol_do_amanhecer.service.PermissaoService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ public class PermissaoServiceImpl implements PermissaoService {
     }
 
     @Override
+    @Transactional
     public PermissaoDTO criar(PermissaoDTO permissaoDTO) {
         LOGGER.info("Criando uma permissão");
         Permissao permissaoEntity = permissaoMapper.dtoParaEntity(permissaoDTO);
@@ -50,6 +52,7 @@ public class PermissaoServiceImpl implements PermissaoService {
     }
 
     @Override
+    @Transactional
     public void atualizar(UUID id, PermissaoDTO permissaoDTO) {
         LOGGER.info("Atualizar uma permissão");
         Permissao permissaoEntity = this.permissaoRepository

@@ -15,10 +15,8 @@ import java.util.UUID;
 @EqualsAndHashCode
 public class TelefoneDTO {
 
-    private UUID uuid;
-
     @NotNull
-    private VoluntarioDTO voluntarioDTO;
+    private UUID uuidVoluntario;
 
     @NotBlank
     @Size(min = 2, max = 2)

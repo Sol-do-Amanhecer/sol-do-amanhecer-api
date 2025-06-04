@@ -10,9 +10,9 @@ import org.mapstruct.factory.Mappers;
 public interface FormularioVoluntarioMapper {
     FormularioVoluntarioMapper INSTANCE = Mappers.getMapper(FormularioVoluntarioMapper.class);
 
-    @Mapping(source = "voluntarioDTO", target = "voluntario")
+    @Mapping(source = "uuidVoluntario", target = "voluntario.uuid")
     FormularioVoluntario dtoParaEntity(FormularioVoluntarioDTO formularioVoluntarioDTO);
 
-    @Mapping(source = "voluntario", target = "voluntarioDTO")
+    @Mapping(source = "voluntario.uuid", target = "uuidVoluntario")
     FormularioVoluntarioDTO entityParaDto(FormularioVoluntario formularioVoluntario);
 }

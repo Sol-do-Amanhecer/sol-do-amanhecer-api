@@ -1,6 +1,7 @@
 package br.com.sol_do_amanhecer.model.mapper;
 
 import br.com.sol_do_amanhecer.model.dto.VoluntarioDTO;
+import br.com.sol_do_amanhecer.model.dto.VoluntarioResponseDTO;
 import br.com.sol_do_amanhecer.model.entity.Voluntario;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -15,4 +16,7 @@ public interface VoluntarioMapper {
 
     @Mapping(source = "endereco", target = "enderecoDTO")
     VoluntarioDTO entityParaDto(Voluntario voluntario);
+
+    @Mapping(source = "endereco", target = "enderecoDTO")
+    VoluntarioResponseDTO entityParaResponseDto(Voluntario voluntario);
 }

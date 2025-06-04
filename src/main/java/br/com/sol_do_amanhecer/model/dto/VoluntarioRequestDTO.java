@@ -9,7 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class VoluntarioRequest {
+public class VoluntarioRequestDTO {
     private VoluntarioDTO voluntarioDTO;
     private List<EmailDTO> emailDTOList;
     private List<TelefoneDTO> telefoneDTOList;

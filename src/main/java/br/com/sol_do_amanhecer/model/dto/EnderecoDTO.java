@@ -13,8 +13,6 @@ import java.util.UUID;
 @EqualsAndHashCode
 public class EnderecoDTO {
 
-    private UUID uuid;
-
     @NotBlank
     @Size(max = 150)
     private String logradouro;

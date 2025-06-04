@@ -10,9 +10,9 @@ import org.mapstruct.factory.Mappers;
 public interface TelefoneMapper {
     TelefoneMapper INSTANCE = Mappers.getMapper(TelefoneMapper.class);
 
-    @Mapping(source = "voluntarioDTO", target = "voluntario")
+    @Mapping(source = "uuidVoluntario", target = "voluntario.uuid")
     Telefone dtoParaEntity(TelefoneDTO telefoneDTO);
 
-    @Mapping(source = "voluntario", target = "voluntarioDTO")
+    @Mapping(source = "voluntario.uuid", target = "uuidVoluntario")
     TelefoneDTO entityParaDto(Telefone telefone);
 }

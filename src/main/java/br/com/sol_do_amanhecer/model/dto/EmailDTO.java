@@ -15,10 +15,8 @@ import java.util.UUID;
 @EqualsAndHashCode
 public class EmailDTO {
 
-    private UUID uuid;
-
     @NotNull
-    private VoluntarioDTO voluntarioDTO;
+    private UUID uuidVoluntario;
 
     @NotBlank
     @Email

@@ -1,17 +1,14 @@
 package br.com.sol_do_amanhecer.service;
 
-import br.com.sol_do_amanhecer.model.dto.EmailDTO;
-import br.com.sol_do_amanhecer.model.dto.FormularioVoluntarioDTO;
-import br.com.sol_do_amanhecer.model.dto.TelefoneDTO;
-import br.com.sol_do_amanhecer.model.dto.VoluntarioDTO;
+import br.com.sol_do_amanhecer.model.dto.*;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface VoluntarioService {
-    VoluntarioDTO buscarPorId(UUID id);
+    VoluntarioResponseDTO buscarPorId(UUID id);
 
-    List<VoluntarioDTO> buscarTodos();
+    List<VoluntarioResponseDTO> buscarTodos();
 
     VoluntarioDTO criar(VoluntarioDTO voluntarioDTO, List<EmailDTO> emailDTOList,
                         List<TelefoneDTO> telefoneDTOList, FormularioVoluntarioDTO formularioDTO);

@@ -48,6 +48,10 @@ public class Usuario implements UserDetails, Serializable {
     )
     private List<Permissao> permissoes;
 
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "voluntario_id", referencedColumnName = "uuid", nullable = false)
+    private Voluntario voluntario;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.permissoes;
