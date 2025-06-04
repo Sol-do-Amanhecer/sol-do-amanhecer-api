@@ -21,4 +21,11 @@ public class PathsConstants {
     public static final String CRIAR_PERMISSAO = PERMISSAO_BASE + "/criar";
     public static final String ATUALIZAR_PERMISSAO = PERMISSAO_BASE + "/atualizar/{id}";
     public static final String APAGAR_PERMISSAO = PERMISSAO_BASE + "/remover/{id}";
+
+    public static final String VOLUNTARIO_BASE = "/voluntario";
+    public static final String VOLUNTARIO_POR_ID = VOLUNTARIO_BASE + "/{id}";
+    public static final String TODOS_VOLUNTARIOS = VOLUNTARIO_BASE + "/";
+    public static final String CRIAR_VOLUNTARIO = VOLUNTARIO_BASE + "/criar";
+    public static final String ATUALIZAR_VOLUNTARIO = VOLUNTARIO_BASE + "/atualizar/{id}";
+    public static final String APAGAR_VOLUNTARIO = VOLUNTARIO_BASE + "/remover/{id}";
 }

@@ -29,13 +29,13 @@ public class Usuario implements UserDetails, Serializable {
     private String senha;
 
     @Column(name = "conta_expirada", nullable = false)
-    private Boolean contaExpirada;
+    private Boolean contaExpirada = false;
 
     @Column(name = "conta_bloqueada", nullable = false)
-    private Boolean contaBloqueada;
+    private Boolean contaBloqueada = false;
 
     @Column(name = "credenciais_expiradas", nullable = false)
-    private Boolean credenciaisExpiradas;
+    private Boolean credenciaisExpiradas = false;
 
     @Column(name = "ativo", nullable = false)
     private Boolean ativo;
@@ -47,6 +47,10 @@ public class Usuario implements UserDetails, Serializable {
             inverseJoinColumns = @JoinColumn(name = "permissao_id")
     )
     private List<Permissao> permissoes;
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "voluntario_id", referencedColumnName = "uuid", nullable = false)
+    private Voluntario voluntario;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

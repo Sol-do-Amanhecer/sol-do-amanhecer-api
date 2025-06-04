@@ -1,6 +1,5 @@
 package br.com.sol_do_amanhecer.model.dto;
 
-import br.com.sol_do_amanhecer.model.entity.Permissao;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -14,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class UsuarioDTO {
-    private UUID uuid;
+
     @NotBlank
     @Size(max = 20, min = 2)
     private String usuario;
@@ -34,5 +33,7 @@ public class UsuarioDTO {
     @Size(max = 1, min = 1)
     private Boolean ativo;
     @NotBlank
-    private List<Permissao> permissoes;
+    private List<PermissaoDTO> permissaoDTOList;
+    @NotBlank
+    private UUID uuidVoluntario;
 }
