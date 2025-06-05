@@ -46,7 +46,7 @@ public class AutenticacaoServiceImpl implements AutenticacaoService {
 
         } catch (BadCredentialsException | UsernameNotFoundException exception) {
             LOGGER.error("Erro ao realizar login", exception);
-            throw new BadCredentialsException("Usuário/senha inválidos!");
+            throw exception;
         }
     }
 
