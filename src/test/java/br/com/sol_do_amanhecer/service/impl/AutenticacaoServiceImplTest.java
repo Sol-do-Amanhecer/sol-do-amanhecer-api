@@ -6,7 +6,6 @@ import br.com.sol_do_amanhecer.repository.UsuarioRepository;
 import br.com.sol_do_amanhecer.security.LoginDTO;
 import br.com.sol_do_amanhecer.security.TokenDTO;
 import br.com.sol_do_amanhecer.security.jwt.JwtTokenProvider;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +27,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class AutenticacaoServiceImplTest {
     public static final int HORA_EM_MILISSEGUNDO = 3600000;
+
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 
@@ -39,10 +39,6 @@ public class AutenticacaoServiceImplTest {
 
     @InjectMocks
     private AutenticacaoServiceImpl autenticacaoService;
-
-    @BeforeEach
-    void setUp() {
-    }
 
     @Test
     @DisplayName("Deve retornar TokenDTO ao autenticar com credenciais válidas")
@@ -160,7 +156,6 @@ public class AutenticacaoServiceImplTest {
     @Test
     @DisplayName("Deve lançar BadCredentialsException ao tentar refresh com refreshToken inválido ou expirado")
     void refreshTokenComTokenInvalido() {
-        // Arrange
         String usuario = "usuarioValido";
         String refreshToken = "refreshTokenInvalido";
 
