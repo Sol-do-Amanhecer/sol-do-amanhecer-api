@@ -21,6 +21,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,12 +42,12 @@ public class JwtTokenProvider {
         algoritmo = Algorithm.HMAC256(chaveSecreta.getBytes());
     }
 
-    public TokenDTO criarTokenAcesso(String usuario, List<Permissao> permissoes) {
+    public TokenDTO criarTokenAcesso(UUID uuidUsuario, String usuario, List<Permissao> permissoes) {
         Date agora = new Date();
         Date validade = new Date(agora.getTime() + validadeEmMilissegundos);
         var tokenAcesso = gerarTokenAcesso(usuario, permissoes, agora, validade);
         var tokenAtualizacao = gerarRefreshToken(usuario, permissoes, agora);
-        return new TokenDTO(usuario, true, agora, validade, tokenAcesso, tokenAtualizacao);
+        return new TokenDTO(uuidUsuario, usuario, true, agora, validade, tokenAcesso, tokenAtualizacao);
     }
 
     public TokenDTO criarRefreshToken(String tokenAtualizacao) {
@@ -58,6 +59,7 @@ public class JwtTokenProvider {
         JWTVerifier verificador = JWT.require(algoritmo).build();
         DecodedJWT jwtDecodificado = verificador.verify(tokenAtualizacao);
         String usuario = jwtDecodificado.getSubject();
+        UUID uuidUsuario = UUID.fromString(jwtDecodificado.getClaim("uuidUsuario").asString());
         List<String> roles = jwtDecodificado.getClaim("roles").asList(String.class);
         List<Permissao> permissoes = roles.stream().map(nome -> {
             Permissao permissao = new Permissao();
@@ -65,7 +67,7 @@ public class JwtTokenProvider {
             return permissao;
         }).collect(Collectors.toList());
 
-        return criarTokenAcesso(usuario, permissoes);
+        return criarTokenAcesso(uuidUsuario, usuario, permissoes);
     }
 
     private String gerarTokenAcesso(String usuario, List<Permissao> permissoes, Date agora, Date validade) {

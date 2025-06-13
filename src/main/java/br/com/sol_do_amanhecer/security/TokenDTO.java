@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -11,6 +12,7 @@ import java.util.Date;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class TokenDTO implements Serializable {
+    private UUID uuidUsuario;
     private String usuario;
     private Boolean authenticated;
     private Date created;
