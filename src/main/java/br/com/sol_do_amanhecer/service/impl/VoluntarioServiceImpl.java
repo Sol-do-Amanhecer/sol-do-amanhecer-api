@@ -76,6 +76,7 @@ public class VoluntarioServiceImpl implements VoluntarioService {
 
         voluntarioExistente.setNomeCompleto(voluntarioDTO.getNomeCompleto());
         voluntarioExistente.setDataNascimento(voluntarioDTO.getDataNascimento());
+        voluntarioExistente.setAtivo(voluntarioDTO.getAtivo());
 
         Endereco endereco = enderecoMapper.dtoParaEntity(voluntarioDTO.getEnderecoDTO());
         voluntarioExistente.setEndereco(endereco);
