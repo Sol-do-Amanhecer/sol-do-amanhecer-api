@@ -1,15 +1,20 @@
-# Configurações de CORS
+# CORS (ajuste conforme necessário em cada ambiente se preferir)
 cors:
-  originPatterns: "http://localhost:8080,http://localhost:4200"
+  originPatterns: "http://localhost:8080, http://localhost:8081, http://localhost:8082, http://localhost:4200"
 
-# Configurações de segurança JWT
+# JWT
 security:
   jwt:
     token:
       secret-key: 53cr37
       expire-length: 3600000
 
-spring-doc:
+springdoc:
   paths-to-match: /sol-do-amanhecer/api/**
   swagger-ui:
     use-root-path: true
+
+management:
+  endpoints:
+    web:
+      base-path: /sol-do-amanhecer/api/actuator
