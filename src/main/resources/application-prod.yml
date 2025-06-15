@@ -16,10 +16,9 @@ spring:
     show-sql: true
 
 management:
-  server:
-    port: 8083
   endpoints:
     web:
+      base-path: /sol-do-amanhecer/api/actuator
       exposure:
         include: health,info
   endpoint:

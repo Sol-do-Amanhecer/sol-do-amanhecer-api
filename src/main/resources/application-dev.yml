@@ -19,10 +19,9 @@ spring:
       path: /h2-console
 
 management:
-  server:
-    port: 8080
   endpoints:
     web:
+      base-path: /sol-do-amanhecer/api/actuator
       exposure:
         include: health,info
   endpoint:
