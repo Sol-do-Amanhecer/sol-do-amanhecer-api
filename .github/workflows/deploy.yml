@@ -15,10 +15,12 @@ jobs:
             VPS_HOST: ${{ secrets.VPS_HOST }}
             VPS_USER: ${{ secrets.VPS_USER }}
             VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
-
             DOCKER_COMPOSE_FILE_HOMOL: docker-compose-homol.yml
             ENV_FILE_HOMOL: .env.homol
             HEALTH_ENDPOINT_HOMOL: http://213.136.68.204:8081/sol-do-amanhecer/api/actuator/health
+            # Adicione abaixo apenas se for usar SECRETS!!
+            # GITHUB_USERNAME: Sol-do-amanhecer
+            # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         steps:
             - name: Checkout código
@@ -33,12 +35,12 @@ jobs:
 
             - name: Deploy seguro na Homologação
               run: |
-                  ssh ${VPS_USER}@${VPS_HOST} << EOF
+                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
                     set -e
                     cd ${VPS_BACKEND_PATH}
                   
                     echo "Atualizando código do projeto (git pull origin main)..."
-                    git pull origin main
+                    git pull https://Sol-do-amanhecer:ghp_vr6IGLcHFBGQnDYs@github.com/Sol-do-Amanhecer/sol-do-amanhecer-api.git main
                   
                     echo "Removendo containers antigos de homologação (se existirem)..."
                     docker rm -f sol-do-amanhecer-postgres-homol || true
@@ -76,10 +78,12 @@ jobs:
             VPS_HOST: ${{ secrets.VPS_HOST }}
             VPS_USER: ${{ secrets.VPS_USER }}
             VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
-
             DOCKER_COMPOSE_FILE_PROD: docker-compose-prod.yml
             ENV_FILE_PROD: .env.prod
             HEALTH_ENDPOINT_PROD: http://213.136.68.204:8083/sol-do-amanhecer/api/actuator/health
+            # Adicione abaixo apenas se for usar SECRETS!!
+            # GITHUB_USERNAME: Sol-do-amanhecer
+            # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         steps:
             - name: Checkout código
@@ -94,12 +98,12 @@ jobs:
 
             - name: Deploy seguro na Produção
               run: |
-                  ssh ${VPS_USER}@${VPS_HOST} << EOF
+                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
                     set -e
                     cd ${VPS_BACKEND_PATH}
                   
                     echo "Atualizando código do projeto (git pull origin main)..."
-                    git pull origin main
+                    git pull https://Sol-do-amanhecer:ghp_vr6IGLcHFBGQnDYs@github.com/Sol-do-Amanhecer/sol-do-amanhecer-api.git main
                   
                     echo "Removendo containers antigos de produção (se existirem)..."
                     docker rm -f sol-do-amanhecer-postgres-prod || true
