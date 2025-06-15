@@ -50,7 +50,7 @@ public class UsuarioController implements Serializable {
     }
 
     @GetMapping(value = TODOS_USUARIOS)
-    @Operation(summary = "Buscar todos os usuários",
+    @Operation(summary = "Buscar todos os usuários 2",
             description = "Retorna uma lista de todos os usuários",
             tags = {"Usuário"},
             responses = {
