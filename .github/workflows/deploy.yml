@@ -17,7 +17,8 @@ jobs:
             VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
             DOCKER_COMPOSE_FILE: docker-compose-homol.yml
             ENV_FILE: .env.homol
-            HEALTH_ENDPOINT: http://213.136.68.204:8081/sol-do-amanhecer/api/actuator/health
+            HEALTH_ENDPOINT_HOMOL: http://213.136.68.204:8081/sol-do-amanhecer/api/actuator/health
+            HEALTH_ENDPOINT_PROD: http://213.136.68.204:8082/sol-do-amanhecer/api/actuator/health
 
         steps:
             - name: Checkout código
@@ -46,7 +47,7 @@ jobs:
                     sleep 15
                   
                     echo "Verificando saúde dos serviços..."
-                    if curl -sf ${HEALTH_ENDPOINT} | grep -q UP; then
+                    if curl -sf ${HEALTH_ENDPOINT_HOMOL} | grep -q UP; then
                       echo "✅ Deploy HOMOLOGAÇÃO saudável!"
                     else
                       echo "❌ Deploy falhou! Restaurando versão anterior..."
@@ -97,7 +98,7 @@ jobs:
                     sleep 15
                   
                     echo "Verificando saúde dos serviços..."
-                    if curl -sf ${HEALTH_ENDPOINT} | grep -q UP; then
+                    if curl -sf ${HEALTH_ENDPOINT_PROD} | grep -q UP; then
                       echo "✅ Deploy PRODUÇÃO saudável!"
                     else
                       echo "❌ [ALERTA] Deploy da produção subiu, mas não está saudável. Verifique!"
