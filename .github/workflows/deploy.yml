@@ -10,6 +10,15 @@ jobs:
         name: Deploy Homologação
         runs-on: ubuntu-latest
 
+        env:
+            SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+            VPS_HOST: ${{ secrets.VPS_HOST }}
+            VPS_USER: ${{ secrets.VPS_USER }}
+            VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
+            DOCKER_COMPOSE_FILE: docker-compose-homol.yml
+            ENV_FILE: .env.homol
+            HEALTH_ENDPOINT: http://213.136.68.204:8081/sol-do-amanhecer/api/actuator/health
+
         steps:
             - name: Checkout código
               uses: actions/checkout@v3
@@ -17,33 +26,32 @@ jobs:
             - name: Configurar chave SSH
               run: |
                   mkdir -p ~/.ssh
-                  echo "${{ secrets.SSH_PRIVATE_KEY_HOMOL }}" > ~/.ssh/id_rsa
+                  echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
                   chmod 600 ~/.ssh/id_rsa
-                  ssh-keyscan -H ${{ secrets.VPS_HOST_HOMOL }} >> ~/.ssh/known_hosts
+                  ssh-keyscan -H ${VPS_HOST} >> ~/.ssh/known_hosts
 
             - name: Deploy seguro na Homologação
               run: |
-                  ssh ${{ secrets.VPS_USER_HOMOL }}@${{ secrets.VPS_HOST_HOMOL }} << 'EOF'
+                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
                     set -e
-                    cd ${{ secrets.VPS_BACKEND_PATH_HOMOL }}
-
+                    cd ${VPS_BACKEND_PATH}
+                  
                     echo "Buildando a imagem nova..."
-                    docker compose -f docker-compose-homol.yml --env-file .env.homol build
-
+                    docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} build
+                  
                     echo "Subindo NOVA aplicação..."
-                    docker compose -f docker-compose-homol.yml --env-file .env.homol up -d
-
+                    docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d
+                  
                     echo "Aguardando aplicação iniciar..."
                     sleep 15
-
+                  
                     echo "Verificando saúde dos serviços..."
-                    HEALTH_ENDPOINT=http://213.136.68.204:8081/sol-do-amanhecer/api/actuator/health
-                    if curl -sf $HEALTH_ENDPOINT | grep -q UP; then
+                    if curl -sf ${HEALTH_ENDPOINT} | grep -q UP; then
                       echo "✅ Deploy HOMOLOGAÇÃO saudável!"
                     else
                       echo "❌ Deploy falhou! Restaurando versão anterior..."
-                      docker compose -f docker-compose-homol.yml --env-file .env.homol down
-                      docker compose -f docker-compose-homol.yml --env-file .env.homol up -d
+                      docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} down
+                      docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d
                       exit 1
                     fi
                   EOF
@@ -53,6 +61,15 @@ jobs:
         runs-on: ubuntu-latest
         needs: deploy-homolog
 
+        env:
+            SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+            VPS_HOST: ${{ secrets.VPS_HOST }}
+            VPS_USER: ${{ secrets.VPS_USER }}
+            VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
+            DOCKER_COMPOSE_FILE: docker-compose-prod.yml
+            ENV_FILE: .env.prod
+            HEALTH_ENDPOINT: http://213.136.68.204:8082/sol-do-amanhecer/api/actuator/health
+
         steps:
             - name: Checkout código
               uses: actions/checkout@v3
@@ -60,32 +77,31 @@ jobs:
             - name: Configurar chave SSH
               run: |
                   mkdir -p ~/.ssh
-                  echo "${{ secrets.SSH_PRIVATE_KEY_PROD }}" > ~/.ssh/id_rsa
+                  echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
                   chmod 600 ~/.ssh/id_rsa
-                  ssh-keyscan -H ${{ secrets.VPS_HOST_PROD }} >> ~/.ssh/known_hosts
+                  ssh-keyscan -H ${VPS_HOST} >> ~/.ssh/known_hosts
 
             - name: Deploy na Produção
               run: |
-                  ssh ${{ secrets.VPS_USER_PROD }}@${{ secrets.VPS_HOST_PROD }} << 'EOF'
+                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
                     set -e
-                    cd ${{ secrets.VPS_BACKEND_PATH_PROD }}
-
+                    cd ${VPS_BACKEND_PATH}
+                  
                     echo "Buildando imagem produção..."
-                    docker compose -f docker-compose-prod.yml --env-file .env.prod build
-
+                    docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} build
+                  
                     echo "Subindo aplicação PROD..."
-                    docker compose -f docker-compose-prod.yml --env-file .env.prod up -d
-
+                    docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d
+                  
                     echo "Aguardando inicialização..."
                     sleep 15
-
+                  
                     echo "Verificando saúde dos serviços..."
-                    HEALTH_ENDPOINT=http://213.136.68.204:8082/sol-do-amanhecer/api/actuator/health
-                    if curl -sf $HEALTH_ENDPOINT | grep -q UP; then
+                    if curl -sf ${HEALTH_ENDPOINT} | grep -q UP; then
                       echo "✅ Deploy PRODUÇÃO saudável!"
                     else
                       echo "❌ [ALERTA] Deploy da produção subiu, mas não está saudável. Verifique!"
-                      docker compose -f docker-compose-prod.yml --env-file .env.prod logs
+                      docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} logs
                       exit 1
                     fi
                   EOF
