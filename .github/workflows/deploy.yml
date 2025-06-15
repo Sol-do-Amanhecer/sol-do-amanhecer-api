@@ -33,19 +33,15 @@ jobs:
 
             - name: Deploy seguro na Homologação
               run: |
-                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
+                  ssh ${VPS_USER}@${VPS_HOST} << EOF
                     set -e
                     cd ${VPS_BACKEND_PATH}
-                  
-                    echo "Removendo containers antigos de homologação (se existirem)..."
-                    docker rm -f sol-do-amanhecer-postgres-homol || true
-                    docker rm -f sol-do-amanhecer-api-homol || true
                   
                     echo "Buildando imagem homologação..."
                     docker-compose -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} build
                   
-                    echo "Subindo containers homologação..."
-                    docker-compose -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} up -d
+                    echo "Atualizando containers homologação sem perder dados..."
+                    docker-compose -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} up -d --force-recreate
                   
                     echo "Aguardando aplicação iniciar..."
                     sleep 60
@@ -88,19 +84,15 @@ jobs:
 
             - name: Deploy seguro na Produção
               run: |
-                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
+                  ssh ${VPS_USER}@${VPS_HOST} << EOF
                     set -e
                     cd ${VPS_BACKEND_PATH}
-                  
-                    echo "Removendo containers antigos de produção (se existirem)..."
-                    docker rm -f sol-do-amanhecer-postgres-prod || true
-                    docker rm -f sol-do-amanhecer-api-prod || true
                   
                     echo "Buildando imagem produção..."
                     docker-compose -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} build
                   
-                    echo "Subindo containers produção..."
-                    docker-compose -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} up -d
+                    echo "Atualizando containers produção sem perder dados..."
+                    docker-compose -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} up -d --force-recreate
                   
                     echo "Aguardando aplicação iniciar..."
                     sleep 60
