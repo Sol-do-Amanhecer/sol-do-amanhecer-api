@@ -43,7 +43,7 @@ jobs:
                     docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d --remove-orphans
                   
                     echo "Aguardando aplicação iniciar..."
-                    sleep 15
+                    sleep 120
                   
                     echo "Verificando saúde dos serviços..."
                     if curl -sf ${HEALTH_ENDPOINT_HOMOL} | grep -q UP; then
@@ -92,7 +92,7 @@ jobs:
                     docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d --remove-orphans
                   
                     echo "Aguardando aplicação iniciar..."
-                    sleep 15
+                    sleep 120
                   
                     echo "Verificando saúde dos serviços..."
                     if curl -sf ${HEALTH_ENDPOINT_PROD} | grep -q UP; then
