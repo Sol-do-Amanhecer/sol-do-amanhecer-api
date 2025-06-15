@@ -18,7 +18,6 @@ jobs:
             DOCKER_COMPOSE_FILE: docker-compose-homol.yml
             ENV_FILE: .env.homol
             HEALTH_ENDPOINT_HOMOL: http://213.136.68.204:8081/sol-do-amanhecer/api/actuator/health
-            HEALTH_ENDPOINT_PROD: http://213.136.68.204:8083/sol-do-amanhecer/api/actuator/health
 
         steps:
             - name: Checkout código
@@ -37,16 +36,10 @@ jobs:
                     set -e
                     cd ${VPS_BACKEND_PATH}
                   
-                    echo "Parando e limpando containers anteriores..."
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} down -v || true
-                  
-                    echo "Removendo órfãos..."
-                    docker system prune -af || true
-                  
                     echo "Buildando a imagem nova..."
                     docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} build
                   
-                    echo "Subindo NOVA aplicação..."
+                    echo "Subindo NOVA aplicação (sem parar/remover volumes)..."
                     docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d --remove-orphans
                   
                     echo "Aguardando aplicação iniciar..."
@@ -56,8 +49,7 @@ jobs:
                     if curl -sf ${HEALTH_ENDPOINT_HOMOL} | grep -q UP; then
                       echo "✅ Deploy HOMOLOGAÇÃO saudável!"
                     else
-                      echo "❌ Deploy falhou! Restaurando versão anterior..."
-                      docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} down
+                      echo "❌ Deploy falhou! Verifique manualmente."
                       exit 1
                     fi
                   EOF
@@ -74,7 +66,7 @@ jobs:
             VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
             DOCKER_COMPOSE_FILE: docker-compose-prod.yml
             ENV_FILE: .env.prod
-            HEALTH_ENDPOINT: http://213.136.68.204:8083/sol-do-amanhecer/api/actuator/health
+            HEALTH_ENDPOINT_PROD: http://213.136.68.204:8083/sol-do-amanhecer/api/actuator/health
 
         steps:
             - name: Checkout código
@@ -87,7 +79,7 @@ jobs:
                   chmod 600 ~/.ssh/id_rsa
                   ssh-keyscan -H ${VPS_HOST} >> ~/.ssh/known_hosts
 
-            - name: Deploy na Produção
+            - name: Deploy seguro na Produção
               run: |
                   ssh ${VPS_USER}@${VPS_HOST} << EOF
                     set -e
@@ -96,10 +88,10 @@ jobs:
                     echo "Buildando imagem produção..."
                     docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} build
                   
-                    echo "Subindo aplicação PROD..."
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d
+                    echo "Subindo aplicação PRODUÇÃO (sem parar/remover volumes)..."
+                    docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d --remove-orphans
                   
-                    echo "Aguardando inicialização..."
+                    echo "Aguardando aplicação iniciar..."
                     sleep 15
                   
                     echo "Verificando saúde dos serviços..."
