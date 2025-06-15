@@ -37,24 +37,30 @@ jobs:
                     set -e
                     cd ${VPS_BACKEND_PATH}
                   
-                    echo "Removendo containers antigos de homologação se existirem (dados do banco NÃO serão perdidos)..."
+                    echo "Atualizando código do projeto (git pull origin main)..."
+                    git pull origin main
+                  
+                    echo "Removendo containers antigos de homologação (se existirem)..."
                     docker rm -f sol-do-amanhecer-postgres-homol || true
                     docker rm -f sol-do-amanhecer-api-homol || true
+                  
+                    echo "Atualizando imagens docker remotas, se houver..."
+                    docker-compose -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} pull
                   
                     echo "Buildando imagens homologação..."
                     docker-compose -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} build
                   
-                    echo "Subindo containers homologação..."
+                    echo "Subindo containers de homologação..."
                     docker-compose -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} up -d
                   
-                    echo "Aguardando aplicação iniciar..."
+                    echo "Aguardando a aplicação iniciar..."
                     sleep 60
                   
                     echo "Verificando saúde dos serviços..."
                     if curl -sf ${HEALTH_ENDPOINT_HOMOL} | grep -q UP; then
-                      echo "✅ Deploy HOMOLOGAÇÃO saudável!"
+                      echo "✅ Deploy Homologação saudável!"
                     else
-                      echo "❌ Deploy de HOMOLOGAÇÃO falhou! Verifique logs."
+                      echo "❌ Deploy de Homologação falhou! Verifique os logs abaixo."
                       docker-compose -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} logs
                       exit 1
                     fi
@@ -92,24 +98,30 @@ jobs:
                     set -e
                     cd ${VPS_BACKEND_PATH}
                   
-                    echo "Removendo containers antigos de produção se existirem (dados do banco NÃO serão perdidos)..."
+                    echo "Atualizando código do projeto (git pull origin main)..."
+                    git pull origin main
+                  
+                    echo "Removendo containers antigos de produção (se existirem)..."
                     docker rm -f sol-do-amanhecer-postgres-prod || true
                     docker rm -f sol-do-amanhecer-api-prod || true
+                  
+                    echo "Atualizando imagens docker remotas, se houver..."
+                    docker-compose -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} pull
                   
                     echo "Buildando imagens produção..."
                     docker-compose -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} build
                   
-                    echo "Subindo containers produção..."
+                    echo "Subindo containers de produção..."
                     docker-compose -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} up -d
                   
-                    echo "Aguardando aplicação iniciar..."
+                    echo "Aguardando a aplicação iniciar..."
                     sleep 60
                   
                     echo "Verificando saúde dos serviços..."
                     if curl -sf ${HEALTH_ENDPOINT_PROD} | grep -q UP; then
-                      echo "✅ Deploy PRODUÇÃO saudável!"
+                      echo "✅ Deploy Produção saudável!"
                     else
-                      echo "❌ Deploy da produção subiu, mas não está saudável. Verifique!"
+                      echo "❌ Deploy de Produção falhou! Verifique os logs abaixo."
                       docker-compose -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} logs
                       exit 1
                     fi
