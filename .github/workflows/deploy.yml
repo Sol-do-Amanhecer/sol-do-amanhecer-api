@@ -40,7 +40,7 @@ jobs:
                     cd ${VPS_BACKEND_PATH}
                   
                     echo "Atualizando código do projeto (git pull origin main)..."
-                    git pull https://Sol-do-amanhecer:ghp_vr6IGLcHFBGQnDYs@github.com/Sol-do-Amanhecer/sol-do-amanhecer-api.git main
+                    git pull git@github.com:Sol-do-Amanhecer/sol-do-amanhecer-api.git main
                   
                     echo "Removendo containers antigos de homologação (se existirem)..."
                     docker rm -f sol-do-amanhecer-postgres-homol || true
@@ -103,7 +103,7 @@ jobs:
                     cd ${VPS_BACKEND_PATH}
                   
                     echo "Atualizando código do projeto (git pull origin main)..."
-                    git pull https://Sol-do-amanhecer:ghp_vr6IGLcHFBGQnDYs@github.com/Sol-do-Amanhecer/sol-do-amanhecer-api.git main
+                    git pull git@github.com:Sol-do-Amanhecer/sol-do-amanhecer-api.git main
                   
                     echo "Removendo containers antigos de produção (se existirem)..."
                     docker rm -f sol-do-amanhecer-postgres-prod || true
