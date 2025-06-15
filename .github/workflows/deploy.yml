@@ -37,10 +37,10 @@ jobs:
                     cd ${VPS_BACKEND_PATH}
                   
                     echo "Buildando a imagem nova..."
-                    docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} build
+                    docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} build
                   
                     echo "Subindo NOVA aplicação..."
-                    docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d
+                    docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d
                   
                     echo "Aguardando aplicação iniciar..."
                     sleep 15
@@ -50,8 +50,8 @@ jobs:
                       echo "✅ Deploy HOMOLOGAÇÃO saudável!"
                     else
                       echo "❌ Deploy falhou! Restaurando versão anterior..."
-                      docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} down
-                      docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d
+                      docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} down
+                      docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d
                       exit 1
                     fi
                   EOF
@@ -88,10 +88,10 @@ jobs:
                     cd ${VPS_BACKEND_PATH}
                   
                     echo "Buildando imagem produção..."
-                    docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} build
+                    docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} build
                   
                     echo "Subindo aplicação PROD..."
-                    docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d
+                    docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d
                   
                     echo "Aguardando inicialização..."
                     sleep 15
@@ -101,7 +101,7 @@ jobs:
                       echo "✅ Deploy PRODUÇÃO saudável!"
                     else
                       echo "❌ [ALERTA] Deploy da produção subiu, mas não está saudável. Verifique!"
-                      docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} logs
+                      docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} logs
                       exit 1
                     fi
                   EOF
