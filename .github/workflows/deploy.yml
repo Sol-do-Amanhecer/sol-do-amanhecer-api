@@ -14,10 +14,13 @@ jobs:
             SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
             VPS_HOST: ${{ secrets.VPS_HOST }}
             VPS_USER: ${{ secrets.VPS_USER }}
-            VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
-            DOCKER_COMPOSE_FILE: docker-compose-homol.yml
-            ENV_FILE: .env.homol
+            VPS_PATH: ${{ secrets.VPS_PATH }}
+
+            DOCKER_COMPOSE_FILE_HOMOL: docker-compose-homol.yml
+            ENV_FILE_HOMOL: .env.homol
             HEALTH_ENDPOINT_HOMOL: http://213.136.68.204:8081/sol-do-amanhecer/api/actuator/health
+
+            DOCKER_COMPOSE_PROJECT_HOMOL: homol
 
         steps:
             - name: Checkout código
@@ -34,13 +37,13 @@ jobs:
               run: |
                   ssh ${VPS_USER}@${VPS_HOST} << EOF
                     set -e
-                    cd ${VPS_BACKEND_PATH}
+                    cd ${VPS_PATH}
                   
-                    echo "Buildando a imagem nova..."
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} build
+                    echo "Buildando imagem homologação..."
+                    docker-compose -p ${DOCKER_COMPOSE_PROJECT_HOMOL} -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} build
                   
-                    echo "Subindo NOVA aplicação (sem parar/remover volumes)..."
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d --remove-orphans
+                    echo "Subindo containers homologação..."
+                    docker-compose -p ${DOCKER_COMPOSE_PROJECT_HOMOL} -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} up -d
                   
                     echo "Aguardando aplicação iniciar..."
                     sleep 60
@@ -49,7 +52,8 @@ jobs:
                     if curl -sf ${HEALTH_ENDPOINT_HOMOL} | grep -q UP; then
                       echo "✅ Deploy HOMOLOGAÇÃO saudável!"
                     else
-                      echo "❌ Deploy falhou! Verifique manualmente."
+                      echo "❌ Deploy de HOMOLOGAÇÃO falhou! Verifique logs."
+                      docker-compose -p ${DOCKER_COMPOSE_PROJECT_HOMOL} -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} logs
                       exit 1
                     fi
                   EOF
@@ -63,10 +67,13 @@ jobs:
             SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
             VPS_HOST: ${{ secrets.VPS_HOST }}
             VPS_USER: ${{ secrets.VPS_USER }}
-            VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
-            DOCKER_COMPOSE_FILE: docker-compose-prod.yml
-            ENV_FILE: .env.prod
+            VPS_PATH: ${{ secrets.VPS_PATH }}
+
+            DOCKER_COMPOSE_FILE_PROD: docker-compose-prod.yml
+            ENV_FILE_PROD: .env.prod
             HEALTH_ENDPOINT_PROD: http://213.136.68.204:8083/sol-do-amanhecer/api/actuator/health
+
+            DOCKER_COMPOSE_PROJECT_PROD: prod
 
         steps:
             - name: Checkout código
@@ -83,13 +90,13 @@ jobs:
               run: |
                   ssh ${VPS_USER}@${VPS_HOST} << EOF
                     set -e
-                    cd ${VPS_BACKEND_PATH}
+                    cd ${VPS_PATH}
                   
                     echo "Buildando imagem produção..."
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} build
+                    docker-compose -p ${DOCKER_COMPOSE_PROJECT_PROD} -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} build
                   
-                    echo "Subindo aplicação PRODUÇÃO (sem parar/remover volumes)..."
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} up -d --remove-orphans
+                    echo "Subindo containers produção..."
+                    docker-compose -p ${DOCKER_COMPOSE_PROJECT_PROD} -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} up -d
                   
                     echo "Aguardando aplicação iniciar..."
                     sleep 60
@@ -98,8 +105,8 @@ jobs:
                     if curl -sf ${HEALTH_ENDPOINT_PROD} | grep -q UP; then
                       echo "✅ Deploy PRODUÇÃO saudável!"
                     else
-                      echo "❌ [ALERTA] Deploy da produção subiu, mas não está saudável. Verifique!"
-                      docker-compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE} logs
+                      echo "❌ Deploy da produção subiu, mas não está saudável. Verifique!"
+                      docker-compose -p ${DOCKER_COMPOSE_PROJECT_PROD} -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} logs
                       exit 1
                     fi
                   EOF
