@@ -32,7 +32,7 @@ jobs:
 
             - name: Deploy seguro na Homologação
               run: |
-                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
+                  ssh ${VPS_USER}@${VPS_HOST} << EOF
                     set -e
                     cd ${VPS_BACKEND_PATH}
                   
@@ -83,7 +83,7 @@ jobs:
 
             - name: Deploy na Produção
               run: |
-                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
+                  ssh ${VPS_USER}@${VPS_HOST} << EOF
                     set -e
                     cd ${VPS_BACKEND_PATH}
                   
