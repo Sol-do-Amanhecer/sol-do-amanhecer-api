@@ -1,6 +1,6 @@
 # CORS (ajuste conforme necessário em cada ambiente se preferir)
 cors:
-  originPatterns: "http://localhost:8080, http://localhost:8081, http://localhost:8082, http://localhost:4200"
+  originPatterns: "http://localhost:8080, http://localhost:8081, http://localhost:8083, http://localhost:4200"
 
 # JWT
 security:

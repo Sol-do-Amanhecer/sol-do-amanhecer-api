@@ -18,7 +18,7 @@ jobs:
             DOCKER_COMPOSE_FILE: docker-compose-homol.yml
             ENV_FILE: .env.homol
             HEALTH_ENDPOINT_HOMOL: http://213.136.68.204:8081/sol-do-amanhecer/api/actuator/health
-            HEALTH_ENDPOINT_PROD: http://213.136.68.204:8082/sol-do-amanhecer/api/actuator/health
+            HEALTH_ENDPOINT_PROD: http://213.136.68.204:8083/sol-do-amanhecer/api/actuator/health
 
         steps:
             - name: Checkout código
@@ -69,7 +69,7 @@ jobs:
             VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
             DOCKER_COMPOSE_FILE: docker-compose-prod.yml
             ENV_FILE: .env.prod
-            HEALTH_ENDPOINT: http://213.136.68.204:8082/sol-do-amanhecer/api/actuator/health
+            HEALTH_ENDPOINT: http://213.136.68.204:8083/sol-do-amanhecer/api/actuator/health
 
         steps:
             - name: Checkout código
