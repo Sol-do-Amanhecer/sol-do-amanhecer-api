@@ -20,8 +20,6 @@ jobs:
             ENV_FILE_HOMOL: .env.homol
             HEALTH_ENDPOINT_HOMOL: http://213.136.68.204:8081/sol-do-amanhecer/api/actuator/health
 
-            DOCKER_COMPOSE_PROJECT_HOMOL: homol
-
         steps:
             - name: Checkout código
               uses: actions/checkout@v3
@@ -35,15 +33,19 @@ jobs:
 
             - name: Deploy seguro na Homologação
               run: |
-                  ssh ${VPS_USER}@${VPS_HOST} << EOF
+                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
                     set -e
                     cd ${VPS_BACKEND_PATH}
                   
+                    echo "Removendo containers antigos de homologação (se existirem)..."
+                    docker rm -f sol-do-amanhecer-postgres-homol || true
+                    docker rm -f sol-do-amanhecer-api-homol || true
+                  
                     echo "Buildando imagem homologação..."
-                    docker-compose -p ${DOCKER_COMPOSE_PROJECT_HOMOL} -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} build
+                    docker-compose -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} build
                   
                     echo "Subindo containers homologação..."
-                    docker-compose -p ${DOCKER_COMPOSE_PROJECT_HOMOL} -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} up -d
+                    docker-compose -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} up -d
                   
                     echo "Aguardando aplicação iniciar..."
                     sleep 60
@@ -53,7 +55,7 @@ jobs:
                       echo "✅ Deploy HOMOLOGAÇÃO saudável!"
                     else
                       echo "❌ Deploy de HOMOLOGAÇÃO falhou! Verifique logs."
-                      docker-compose -p ${DOCKER_COMPOSE_PROJECT_HOMOL} -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} logs
+                      docker-compose -f ${DOCKER_COMPOSE_FILE_HOMOL} --env-file ${ENV_FILE_HOMOL} logs
                       exit 1
                     fi
                   EOF
@@ -73,8 +75,6 @@ jobs:
             ENV_FILE_PROD: .env.prod
             HEALTH_ENDPOINT_PROD: http://213.136.68.204:8083/sol-do-amanhecer/api/actuator/health
 
-            DOCKER_COMPOSE_PROJECT_PROD: prod
-
         steps:
             - name: Checkout código
               uses: actions/checkout@v3
@@ -88,15 +88,19 @@ jobs:
 
             - name: Deploy seguro na Produção
               run: |
-                  ssh ${VPS_USER}@${VPS_HOST} << EOF
+                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
                     set -e
                     cd ${VPS_BACKEND_PATH}
                   
+                    echo "Removendo containers antigos de produção (se existirem)..."
+                    docker rm -f sol-do-amanhecer-postgres-prod || true
+                    docker rm -f sol-do-amanhecer-api-prod || true
+                  
                     echo "Buildando imagem produção..."
-                    docker-compose -p ${DOCKER_COMPOSE_PROJECT_PROD} -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} build
+                    docker-compose -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} build
                   
                     echo "Subindo containers produção..."
-                    docker-compose -p ${DOCKER_COMPOSE_PROJECT_PROD} -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} up -d
+                    docker-compose -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} up -d
                   
                     echo "Aguardando aplicação iniciar..."
                     sleep 60
@@ -106,7 +110,7 @@ jobs:
                       echo "✅ Deploy PRODUÇÃO saudável!"
                     else
                       echo "❌ Deploy da produção subiu, mas não está saudável. Verifique!"
-                      docker-compose -p ${DOCKER_COMPOSE_PROJECT_PROD} -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} logs
+                      docker-compose -f ${DOCKER_COMPOSE_FILE_PROD} --env-file ${ENV_FILE_PROD} logs
                       exit 1
                     fi
                   EOF
