@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @DisplayName("Testes unitários do PermissaoController")
-class PermissaoControllerTest {
+public class PermissaoControllerTest {
 
     @Mock
     private PermissaoService permissaoService;

@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @DisplayName("Testes de UsuarioController")
-class UsuarioControllerTest {
+public class UsuarioControllerTest {
 
     @Mock
     private UsuarioService usuarioService;
