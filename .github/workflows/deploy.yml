@@ -35,10 +35,10 @@ jobs:
 
             - name: Deploy seguro na Homologação
               run: |
-                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
+                  ssh ${VPS_USER}@${VPS_HOST} << EOF
                     set -e
                     cd ${VPS_BACKEND_PATH}
-                  
+                    
                     echo "Atualizando código do projeto (git pull origin main)..."
                     git pull git@github.com:Sol-do-Amanhecer/sol-do-amanhecer-api.git main
                   
@@ -98,7 +98,7 @@ jobs:
 
             - name: Deploy seguro na Produção
               run: |
-                  ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
+                  ssh ${VPS_USER}@${VPS_HOST} << EOF
                     set -e
                     cd ${VPS_BACKEND_PATH}
                   
