@@ -37,7 +37,8 @@ jobs:
               run: |
                   ssh ${VPS_USER}@${VPS_HOST} << 'EOF'
                     set -e
-                    cd ${VPS_BACKEND_PATH}
+                    # cd ${VPS_BACKEND_PATH}
+                    cd /home/soldoamanhecer/sol-do-amanhecer-api/
                     pwd
                     ls -la
 
