@@ -28,4 +28,12 @@ public class PathsConstants {
     public static final String CRIAR_VOLUNTARIO = VOLUNTARIO_BASE + "/criar";
     public static final String ATUALIZAR_VOLUNTARIO = VOLUNTARIO_BASE + "/atualizar/{id}";
     public static final String APAGAR_VOLUNTARIO = VOLUNTARIO_BASE + "/remover/{id}";
+
+    public static final String ACAO_BASE = "/acao";
+    public static final String ACAO_POR_ID = ACAO_BASE + "/{id}";
+    public static final String TODAS_ACOES = ACAO_BASE + "/";
+    public static final String CRIAR_ACAO = ACAO_BASE + "/criar";
+    public static final String ATUALIZAR_ACAO = ACAO_BASE + "/atualizar/{id}";
+    public static final String APAGAR_ACAO = ACAO_BASE + "/remover/{id}";
+
 }
