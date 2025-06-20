@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -31,8 +30,4 @@ public class AcaoDTO {
 
     @NotNull
     private ETipoAcao tipo;
-
-    @NotNull
-    private List<ImagemAcaoDTO> imagens;
-
 }

@@ -11,7 +11,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ImagemAcaoDTO {
 
-    private UUID uuid;
+    @NotNull
+    private UUID uuidAcao;
 
     @NotNull(message = "A imagem da ação é obrigatória")
     private byte[] imagem;

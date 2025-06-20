@@ -1,6 +1,8 @@
 package br.com.sol_do_amanhecer.controller;
 
 import br.com.sol_do_amanhecer.model.dto.AcaoDTO;
+import br.com.sol_do_amanhecer.model.dto.AcaoRequestDTO;
+import br.com.sol_do_amanhecer.model.dto.AcaoResponseDTO;
 import br.com.sol_do_amanhecer.service.AcaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,8 +19,9 @@ import static br.com.sol_do_amanhecer.shared.constant.PathsConstants.*;
 
 @RestController
 @RequestMapping(BASE_URL)
-@Tag(name = "Acao", description = "Endpoints para Gerenciar as Ações")
+@Tag(name = "Ação", description = "Endpoints para Gerenciar as Ações")
 public class AcaoController implements Serializable {
+
     private final Logger LOGGER = LoggerFactory.getLogger(AcaoController.class);
     private final AcaoService acaoService;
 
@@ -26,51 +29,52 @@ public class AcaoController implements Serializable {
         this.acaoService = acaoService;
     }
 
-    @GetMapping(ACAO_POR_ID)
-    @Operation(summary = "Buscar ação por ID", description = "Busca uma ação pelo ID")
-    public ResponseEntity<AcaoDTO> buscarPorId(@PathVariable(value = "id") UUID id) {
-        LOGGER.debug("Requisição para buscar ação por ID");
-        AcaoDTO acaoDTO = acaoService.buscarPorId(id);
-        if (acaoDTO == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok().body(acaoDTO);
+    @PostMapping(value = CRIAR_ACAO)
+    @Operation(summary = "Criar uma nova ação", description = "Adiciona uma nova ação com imagens associadas")
+    public ResponseEntity<AcaoDTO> criar(@RequestBody AcaoRequestDTO acaoRequestDTO) {
+        LOGGER.debug("Requisição para criar ação");
+        AcaoDTO createdAcaoDTO = this.acaoService.criar(
+                acaoRequestDTO.getAcaoDTO(),
+                acaoRequestDTO.getImagemDTOList()
+        );
+        return ResponseEntity.ok().body(createdAcaoDTO);
     }
 
-    @GetMapping(TODAS_ACOES)
+    @GetMapping(value = ACAO_POR_ID)
+    @Operation(summary = "Buscar ação por ID", description = "Busca uma ação pelo ID")
+    public ResponseEntity<AcaoResponseDTO> buscarPorId(@PathVariable(value = "id") UUID id) {
+        LOGGER.debug("Requisição para buscar ação por ID");
+        AcaoResponseDTO acaoResponseDTO = this.acaoService.buscarPorId(id);
+        return ResponseEntity.ok().body(acaoResponseDTO);
+    }
+
+    @GetMapping(value = TODAS_ACOES)
     @Operation(summary = "Buscar todas as ações", description = "Retorna uma lista de todas as ações")
-    public ResponseEntity<List<AcaoDTO>> buscarTodos() {
+    public ResponseEntity<List<AcaoResponseDTO>> buscarTodos() {
         LOGGER.debug("Requisição para buscar todas as ações");
-        List<AcaoDTO> acoes = acaoService.buscarTodos();
+        List<AcaoResponseDTO> acoes = this.acaoService.buscarTodos();
         return ResponseEntity.ok().body(acoes);
     }
 
-    @PostMapping(CRIAR_ACAO)
-    @Operation(summary = "Criar uma nova ação", description = "Adiciona uma nova ação")
-    public ResponseEntity<AcaoDTO> criar(@RequestBody AcaoDTO acaoDTO) {
-        LOGGER.debug("Requisição para cria ação");
-        AcaoDTO criada = acaoService.criar(acaoDTO);
-        return ResponseEntity.ok().body(criada);
-    }
-
-    @PutMapping(ATUALIZAR_ACAO)
-    @Operation(summary = "Atualizar uma ação", description = "Atualiza uma ação existente")
-    public ResponseEntity<Void> atualizar(@PathVariable(value = "id") UUID id, @RequestBody AcaoDTO acaoDTO) {
+    @PutMapping(value = ATUALIZAR_ACAO)
+    @Operation(summary = "Atualizar uma ação", description = "Atualiza uma ação existente com imagens associadas")
+    public ResponseEntity<Void> atualizar(
+            @PathVariable(value = "id") UUID id,
+            @RequestBody AcaoRequestDTO acaoRequestDTO) {
         LOGGER.debug("Requisição para atualizar ação");
-        acaoService.atualizar(id, acaoDTO);
+        this.acaoService.atualizar(
+                id,
+                acaoRequestDTO.getAcaoDTO(),
+                acaoRequestDTO.getImagemDTOList()
+        );
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping(APAGAR_ACAO)
     @Operation(summary = "Excluir uma ação", description = "Remove uma ação pelo ID")
-    public ResponseEntity<Void> remover(@PathVariable(value = "id") UUID id) {
+    public ResponseEntity<Void> deletar(@PathVariable(value = "id") UUID id) {
         LOGGER.debug("Requisição para deletar ação");
-        AcaoDTO acaoDTO = acaoService.buscarPorId(id);
-        if (acaoDTO == null) {
-            return ResponseEntity.notFound().build();
-        }
-        acaoService.remover(acaoDTO);
+        this.acaoService.remover(id);
         return ResponseEntity.noContent().build();
     }
-
 }

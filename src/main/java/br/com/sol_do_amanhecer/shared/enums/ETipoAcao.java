@@ -4,20 +4,18 @@ import lombok.Getter;
 
 @Getter
 public enum ETipoAcao {
-    gestanteCrianca("Apoio a Gestantes e Crianças"),
-    socialAlimentar("Apoio Social e Alimentar"),
-    animal("Bem-estar Animal"),
-    idoso("Cuidados com Idosos"),
-    comemorativa("Datas Comemorativas e Eventos"),
-    inclusao("Inclusão Social"),
-    ambiente("Meio Ambiente"),
-    saude("Saúde e Bem-estar");
+    GESTANTE_CRIANCA("Apoio a Gestantes e Crianças"),
+    SOCIAL_ALIMENTAR("Apoio Social e Alimentar"),
+    ANIMAL("Bem-estar Animal"),
+    IDOSO("Cuidados com Idosos"),
+    COMEMORATIVA("Datas Comemorativas e Eventos"),
+    INCLUSAO("Inclusão Social"),
+    AMBIENTE("Meio Ambiente"),
+    SAUDE("Saúde e Bem-estar");
 
     public final String descricao;
 
     ETipoAcao(String descricao) {
         this.descricao = descricao;
     }
-
-
 }

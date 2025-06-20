@@ -6,7 +6,6 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -34,9 +33,4 @@ public class Acao implements Serializable {
     @Column
     @Enumerated(EnumType.STRING)
     private ETipoAcao tipo;
-
-    @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_acao", nullable = false)
-    private List<ImagemAcao> imagens;
-
 }

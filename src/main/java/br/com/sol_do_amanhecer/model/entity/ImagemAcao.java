@@ -18,7 +18,10 @@ public class ImagemAcao {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID uuid;
 
-    @Lob
     @Column(name = "imagem", nullable = false)
     private byte[] imagem;
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "acao_id", nullable = false)
+    private Acao acao;
 }

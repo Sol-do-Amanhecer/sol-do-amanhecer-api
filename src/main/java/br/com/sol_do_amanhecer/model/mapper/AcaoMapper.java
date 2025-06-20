@@ -9,9 +9,7 @@ import org.mapstruct.factory.Mappers;
 public interface AcaoMapper {
     AcaoMapper INSTANCE = Mappers.getMapper(AcaoMapper.class);
 
-    @Mapping(source = "imagens", target = "imagens")
     Acao dtoParaEntity(AcaoDTO acaoDTO);
 
-    @Mapping(source = "imagens", target = "imagens")
     AcaoDTO entityParaDto(Acao acao);
 }

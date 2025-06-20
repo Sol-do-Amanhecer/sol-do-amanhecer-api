@@ -11,10 +11,4 @@ import java.util.UUID;
 
 @Repository
 public interface AcaoRepository extends JpaRepository<Acao, UUID> {
-
-    @EntityGraph (attributePaths = "imagens")
-    Optional<Acao> findById(UUID uuid);
-
-    @EntityGraph (attributePaths = "imagens")
-    List<Acao> findAll();
 }
