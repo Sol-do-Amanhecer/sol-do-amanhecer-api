@@ -3,7 +3,7 @@ name: Deploy API (Homologação)
 on:
     push:
         branches:
-            - homolog
+            - homol
 
 jobs:
     deploy-homolog:
