@@ -1,0 +1,45 @@
+name: Deploy API (Produção)
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    deploy-prod:
+        name: Deploy em Produção
+        runs-on: ubuntu-latest
+        environment: producao
+
+        steps:
+            - name: Configurar chave SSH
+              run: |
+                  mkdir -p ~/.ssh
+                  echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+                  chmod 600 ~/.ssh/id_rsa
+                  ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+            - name: Deploy na VPS (Produção)
+              env:
+                  SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
+                  APP_PORT: ${{ secrets.APP_PORT }}
+                  POSTGRES_HOST_PORT: ${{ secrets.POSTGRES_HOST_PORT }}
+                  POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+                  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+                  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+                  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+                  APP_HOST_PORT: ${{ secrets.APP_HOST_PORT }}
+                  COMPOSE_PROJECT_NAME: api-prod
+
+              run: |
+                  ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
+                    # O caminho vem do secret VPS_PROJECT_PATH que deve estar configurado no ambiente
+                    cd ${{ secrets.VPS_PROJECT_PATH }}
+                    
+                    echo "=> Atualizando código da branch MAIN..."
+                    git fetch origin
+                    git reset --hard origin/main
+                    
+                    echo "=> Subindo ambiente de PRODUÇÃO..."
+                    docker compose up -d --build
+                  EOF
