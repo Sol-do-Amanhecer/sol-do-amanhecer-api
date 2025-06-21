@@ -36,4 +36,24 @@ public class PathsConstants {
     public static final String ATUALIZAR_ACAO = ACAO_BASE + "/atualizar/{id}";
     public static final String APAGAR_ACAO = ACAO_BASE + "/remover/{id}";
 
+    public static final String DOACAO_BASE = "/doacao";
+    public static final String DOACAO_POR_ID = DOACAO_BASE + "/{id}";
+    public static final String TODAS_DOACOES = DOACAO_BASE + "/";
+    public static final String CRIAR_DOACAO = DOACAO_BASE + "/criar";
+    public static final String ATUALIZAR_DOACAO = DOACAO_BASE + "/atualizar/{id}";
+    public static final String APAGAR_DOACAO = DOACAO_BASE + "/remover/{id}";
+
+    public static final String PRESTACAO_BASE = "/prestacao";
+    public static final String PRESTACAO_POR_ID = PRESTACAO_BASE + "/{id}";
+    public static final String TODAS_PRESTACOES = PRESTACAO_BASE + "/";
+    public static final String CRIAR_PRESTACAO = PRESTACAO_BASE + "/criar";
+    public static final String ATUALIZAR_PRESTACAO = PRESTACAO_BASE + "/atualizar/{id}";
+    public static final String APAGAR_PRESTACAO = PRESTACAO_BASE + "/remover/{id}";
+
+    public static final String OBJETIVO_BASE = "/objetivo";
+    public static final String OBJETIVO_POR_ID = OBJETIVO_BASE + "/{id}";
+    public static final String TODOS_OBJETIVOS = OBJETIVO_BASE + "/";
+    public static final String CRIAR_OBJETIVO = OBJETIVO_BASE + "/criar";
+    public static final String ATUALIZAR_OBJETIVO = OBJETIVO_BASE + "/atualizar/{id}";
+    public static final String APAGAR_OBJETIVO = OBJETIVO_BASE + "/remover/{id}";
 }
