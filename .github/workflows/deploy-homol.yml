@@ -54,8 +54,8 @@ jobs:
                     echo "=> Forçando a reconstrução da imagem sem cache..."
                     docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} build --no-cache
 
-                    echo "=> Subindo o novo container com o código atualizado..."
-                    docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} up -d
+                    echo "=> Forçando a recriação do container com a nova imagem..."
+                    docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} up -d --force-recreate
 
                     echo "=> Limpando arquivo .env temporário..."
                     rm .env
