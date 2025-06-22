@@ -40,17 +40,17 @@ jobs:
                     git pull origin homol
                     
                     echo "=> Preparando variáveis de ambiente para homologação..."
-                    cat > .env << `EOT`
-              SPRING_PROFILES_ACTIVE=${{ env.SPRING_PROFILES_ACTIVE }}
-              APP_PORT=${{ env.APP_PORT }}
-              POSTGRES_HOST_PORT=${{ env.POSTGRES_HOST_PORT }}
-              POSTGRES_PORT=${{ env.POSTGRES_PORT }}
-              POSTGRES_DB=${{ env.POSTGRES_DB }}
-              POSTGRES_USER=${{ env.POSTGRES_USER }}
-              POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
-              APP_HOST_PORT=${{ env.APP_HOST_PORT }}
-              EOT
-
+                    cat > .env << EOT
+                      SPRING_PROFILES_ACTIVE=${{ env.SPRING_PROFILES_ACTIVE }}
+                      APP_PORT=${{ env.APP_PORT }}
+                      POSTGRES_HOST_PORT=${{ env.POSTGRES_HOST_PORT }}
+                      POSTGRES_PORT=${{ env.POSTGRES_PORT }}
+                      POSTGRES_DB=${{ env.POSTGRES_DB }}
+                      POSTGRES_USER=${{ env.POSTGRES_USER }}
+                      POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
+                      APP_HOST_PORT=${{ env.APP_HOST_PORT }}
+                    EOT
+                    
                     echo "=> Forçando a reconstrução da imagem sem cache..."
                     docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} build --no-cache
 
