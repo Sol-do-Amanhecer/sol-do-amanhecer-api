@@ -63,6 +63,7 @@ public class AcaoServiceImpl implements AcaoService {
         acaoExistente.setNome(acaoDTO.getNome());
         acaoExistente.setDescricao(acaoDTO.getDescricao());
         acaoExistente.setDataAcao(acaoDTO.getDataAcao());
+        acaoExistente.setLocalAcao(acaoDTO.getLocalAcao());
         acaoExistente.setTipo(acaoDTO.getTipo());
 
         atualizarImagens(acaoExistente, imagemDTOs);

@@ -27,6 +27,9 @@ public class Acao implements Serializable {
     @Column(name = "data_acao", nullable = false)
     private LocalDate dataAcao;
 
+    @Column(name = "local_acao", nullable = false)
+    private String localAcao;
+
     @Column(nullable = false)
     private String descricao;
 
