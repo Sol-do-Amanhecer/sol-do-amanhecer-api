@@ -34,10 +34,10 @@ jobs:
               run: |
                   ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
                     set -e
-                    cd ${{ secrets.VPS_BACKEND_PATH }}
+                    cd ${{ secrets.VPS_PROJECT_PATH }}
                     
                     echo "=> Atualizando código da branch HOMOLOG..."
-                    git pull git@github.com-api-deploy:Sol-do-Amanhecer/sol-do-amanhecer-api.git homol
+                    git pull origin homol
                     
                     echo "=> Preparando variáveis de ambiente para homologação..."
                     cat > .env << EOT
@@ -51,8 +51,11 @@ jobs:
                     APP_HOST_PORT=${{ env.APP_HOST_PORT }}
                     EOT
 
-                    echo "=> Subindo ambiente de HOMOLOGAÇÃO..."
-                    docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} up -d --build
+                    echo "=> Forçando a reconstrução da imagem sem cache..."
+                    docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} build --no-cache
+
+                    echo "=> Subindo o novo container com o código atualizado..."
+                    docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} up -d
 
                     echo "=> Limpando arquivo .env temporário..."
                     rm .env
