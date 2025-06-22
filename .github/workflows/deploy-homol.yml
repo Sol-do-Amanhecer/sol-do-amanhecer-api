@@ -40,7 +40,7 @@ jobs:
                     git pull origin homol
                     
                     echo "=> Preparando variáveis de ambiente para homologação..."
-                    cat > .env << EOT
+                    cat > .env << `EOT`
               SPRING_PROFILES_ACTIVE=${{ env.SPRING_PROFILES_ACTIVE }}
               APP_PORT=${{ env.APP_PORT }}
               POSTGRES_HOST_PORT=${{ env.POSTGRES_HOST_PORT }}
