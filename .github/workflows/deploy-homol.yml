@@ -32,7 +32,7 @@ jobs:
                   COMPOSE_PROJECT_NAME: api-homolog
 
               run: |
-                  ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+                  ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
                     set -e
                     cd ${{ secrets.VPS_PROJECT_PATH }}
                     
