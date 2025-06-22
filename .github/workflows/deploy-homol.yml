@@ -37,8 +37,8 @@ jobs:
                     cd ${{ secrets.VPS_PROJECT_PATH }}
                     
                     echo "=> Atualizando código da branch HOMOLOG..."
-                    git pull git@github.com:Sol-do-Amanhecer/sol-do-amanhecer-api.git homol                  
-                  
+                    git pull origin homol
+                    
                     echo "=> Preparando variáveis de ambiente para homologação..."
                     cat > .env << EOT
                     SPRING_PROFILES_ACTIVE=${{ env.SPRING_PROFILES_ACTIVE }}
