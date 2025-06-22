@@ -33,8 +33,8 @@ jobs:
 
               run: |
                   ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
-                    # O caminho vem do secret VPS_PROJECT_PATH que deve estar configurado no ambiente
-                    cd ${{ secrets.VPS_PROJECT_PATH }}
+                    # O caminho vem do secret VPS_BACKEND_PATH que deve estar configurado no ambiente
+                    cd ${{ secrets.VPS_BACKEND_PATH }}
                     
                     echo "=> Atualizando código da branch MAIN..."
                     git fetch origin
