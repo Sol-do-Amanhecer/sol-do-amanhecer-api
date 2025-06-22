@@ -5,8 +5,8 @@ services:
             dockerfile: ./docker-config/db/Dockerfile
         volumes:
             - postgres_data:/var/lib/postgresql/data
-        ports:
-            - "${POSTGRES_HOST_PORT}:${POSTGRES_PORT}"
+        #ports:
+        #    - "${POSTGRES_HOST_PORT}:${POSTGRES_PORT}"
         networks:
             - sol-do-amanhecer-network
         environment:
