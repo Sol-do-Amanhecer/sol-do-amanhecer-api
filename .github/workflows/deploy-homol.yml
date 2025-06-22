@@ -37,8 +37,7 @@ jobs:
                     cd ${{ secrets.VPS_BACKEND_PATH }}
                     
                     echo "=> Atualizando código da branch HOMOLOG..."
-                    git fetch origin
-                    git reset --hard origin/homol
+                    git pull origin homol
                     
                     echo "=> Preparando variáveis de ambiente para homologação..."
                     cat > .env << EOT
