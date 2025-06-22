@@ -69,7 +69,6 @@ public class AcaoController implements Serializable {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("dataAcao").ascending());
 
-        // Adiciona os filtros opcionais no serviço
         Page<AcaoResponseDTO> resultado = acaoService.buscarTodos(tipo, ano, mes, pageable);
         return ResponseEntity.ok().body(resultado);
     }
