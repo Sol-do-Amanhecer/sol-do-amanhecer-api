@@ -27,8 +27,8 @@ public class FormularioVoluntarioDTO {
     @NotNull
     private Boolean cienteTrabalhoVoluntario;
 
-    @NotBlank
-    private String dedicacaoVoluntariado;
+    @NotNull
+    private Boolean dedicacaoVoluntariado;
 
     @NotBlank
     private String disponibilidadeSemana;
