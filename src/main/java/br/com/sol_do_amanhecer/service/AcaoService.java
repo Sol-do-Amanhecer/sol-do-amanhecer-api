@@ -3,6 +3,9 @@ package br.com.sol_do_amanhecer.service;
 import br.com.sol_do_amanhecer.model.dto.AcaoDTO;
 import br.com.sol_do_amanhecer.model.dto.AcaoResponseDTO;
 import br.com.sol_do_amanhecer.model.dto.ImagemAcaoDTO;
+import br.com.sol_do_amanhecer.shared.enums.ETipoAcao;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,5 +20,5 @@ public interface AcaoService {
 
     AcaoResponseDTO buscarPorId(UUID id);
 
-    List<AcaoResponseDTO> buscarTodos();
+    Page<AcaoResponseDTO> buscarTodos(ETipoAcao tipo, Integer ano, Integer mes, Pageable pageable);
 }

@@ -10,6 +10,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,10 +67,17 @@ public class UsuarioController implements Serializable {
                     @ApiResponse(description = "Não Encontrado", responseCode = "404", content = @Content),
                     @ApiResponse(description = "Erro Interno", responseCode = "500", content = @Content),
             })
-    public ResponseEntity<List<UsuarioDTO>> buscarTodos() {
-        LOGGER.debug("Requisição para buscar todos os usuários");
-        List<UsuarioDTO> userDTOList = this.usuarioService.buscarTodos();
-        return ResponseEntity.ok().body(userDTOList);
+    public ResponseEntity<Page<UsuarioDTO>> buscarTodos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Boolean ativo) {
+
+        LOGGER.debug("Requisição para buscar usuários com paginação");
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UsuarioDTO> usuarios = usuarioService.buscarTodos(ativo, pageable);
+
+        return ResponseEntity.ok().body(usuarios);
     }
 
     @PostMapping(value = CRIAR_USUARIO)

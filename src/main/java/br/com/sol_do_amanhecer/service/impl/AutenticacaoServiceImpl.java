@@ -36,7 +36,7 @@ public class AutenticacaoServiceImpl implements AutenticacaoService {
 
             if (usuarioEntity != null) {
                 if (passwordEncoder.matches(senha, usuarioEntity.getSenha())) {
-                    return this.jwtTokenProvider.criarTokenAcesso(usuario, usuarioEntity.getPermissoes());
+                    return this.jwtTokenProvider.criarTokenAcesso(usuarioEntity.getUuid(), usuario, usuarioEntity.getPermissoes());
                 } else {
                     throw new BadCredentialsException("Usuário/senha inválidos!");
                 }

@@ -28,6 +28,9 @@ public class AcaoDTO {
     @NotNull
     private LocalDate dataAcao;
 
+    @NotBlank
+    private String localAcao;
+
     @NotNull
     private ETipoAcao tipo;
 }

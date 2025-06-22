@@ -21,12 +21,9 @@ public class ObjetivoMensalRequestDTO {
     @NotBlank
     private EMes mes;
 
-    @NotNull(message = "O ano do objetivo é obrigatório.")
+    @NotNull
     private Integer ano;
 
     @NotNull
     private Double objetivoArrecadacao;
-
-    @NotNull
-    private Double objetivoGastos;
 }

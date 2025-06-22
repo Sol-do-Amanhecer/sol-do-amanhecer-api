@@ -34,7 +34,7 @@ public class FormularioVoluntario implements Serializable {
     private Boolean cienteTrabalhoVoluntario;
 
     @Column(name = "dedicacao_voluntariado", nullable = false, columnDefinition = "text")
-    private String dedicacaoVoluntariado;
+    private Boolean dedicacaoVoluntariado;
 
     @Column(name = "disponibilidade_semana", nullable = false, columnDefinition = "text")
     private String disponibilidadeSemana;
