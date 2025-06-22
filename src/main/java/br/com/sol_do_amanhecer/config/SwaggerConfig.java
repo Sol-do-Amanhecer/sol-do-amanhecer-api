@@ -13,7 +13,7 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Api - Sol do Amanhecer")
+                        .title("Api - Sol do Amanhecer - teste")
                         .version("v1")
                         .description("Api da Ong do Sol do Amanhecer")
                         .termsOfService("https://github.com/Sol-do-Amanhecer")
