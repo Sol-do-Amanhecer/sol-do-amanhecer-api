@@ -18,6 +18,23 @@ jobs:
                   echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
                   chmod 600 ~/.ssh/id_rsa
                   ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+            
+            - name: Gerar arquivo .env localmente
+              run: |
+                  cat > .env <<EOF
+                    SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}
+                    APP_PORT=${{ secrets.APP_PORT }}
+                    POSTGRES_HOST_PORT=${{ secrets.POSTGRES_HOST_PORT }}
+                    POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+                    POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+                    POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+                    POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+                    APP_HOST_PORT=${{ secrets.APP_HOST_PORT }}
+                  EOF
+
+            - name: Enviar .env para VPS
+              run: |
+                  scp -i ~/.ssh/id_rsa .env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_BACKEND_PATH }}/.env
 
             - name: Deploy na VPS (Homologação)
               env:
@@ -38,19 +55,7 @@ jobs:
                     
                     echo "=> Atualizando código da branch HOMOLOG..."
                     git pull origin homol
-                    
-                    echo "=> Preparando variáveis de ambiente para homologação..."
-                    cat > .env << EOF
-                      SPRING_PROFILES_ACTIVE=${{ env.SPRING_PROFILES_ACTIVE }}
-                      APP_PORT=${{ env.APP_PORT }}
-                      POSTGRES_HOST_PORT=${{ env.POSTGRES_HOST_PORT }}
-                      POSTGRES_PORT=${{ env.POSTGRES_PORT }}
-                      POSTGRES_DB=${{ env.POSTGRES_DB }}
-                      POSTGRES_USER=${{ env.POSTGRES_USER }}
-                      POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
-                      APP_HOST_PORT=${{ env.APP_HOST_PORT }}
-                    EOF
-                    
+                     
                     echo "=> Forçando a reconstrução da imagem sem cache..."
                     docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} build --no-cache
 
