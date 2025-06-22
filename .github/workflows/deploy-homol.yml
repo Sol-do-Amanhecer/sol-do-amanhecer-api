@@ -21,32 +21,24 @@ jobs:
 
             - name: Deploy na VPS (Homologação)
               env:
+                  # As secrets são carregadas do environment 'homologacao'
                   SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
                   APP_PORT: ${{ secrets.APP_PORT }}
                   POSTGRES_HOST_PORT: ${{ secrets.POSTGRES_HOST_PORT }}
-                  POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+                  POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }} # <-- Deve apontar para o secret correto
                   POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
                   POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
                   POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
                   APP_HOST_PORT: ${{ secrets.APP_HOST_PORT }}
                   COMPOSE_PROJECT_NAME: api-homolog
-
               run: |
-                  # ==================== PASSO DE DEBUG ====================
-                  echo "--- INICIANDO DEBUG DE SECRETS ---"
-                  echo "O workflow está lendo o secret POSTGRES_PORT com o valor: ${{ secrets.POSTGRES_PORT }}"
-                  echo "O workflow está lendo o secret POSTGRES_HOST_PORT com o valor: ${{ secrets.POSTGRES_HOST_PORT }}"
-                  echo "--- FIM DO DEBUG ---"
-                  # ========================================================
-
                   ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
                     set -e
                     cd ${{ secrets.VPS_BACKEND_PATH }}
                     
                     echo "=> Atualizando código da branch HOMOLOG..."
-                    # Se a pasta .git não existir, clona o repositório. Senão, só atualiza.
                     if [ ! -d ".git" ]; then
-                      echo "=> Repositório não encontrado, clonando pela primeira vez..."
+                      echo "=> Repositório não encontrado, clonando..."
                       git clone git@github.com-api-deploy:Sol-do-Amanhecer/sol-do-amanhecer-api.git .
                     else
                       echo "=> Repositório encontrado, atualizando..."
@@ -54,7 +46,7 @@ jobs:
                       git reset --hard origin/homol
                     fi
                     
-                    echo "=> Preparando variáveis de ambiente para homologação..."
+                    echo "=> Preparando variáveis de ambiente..."
                     cat > .env << EOT
                     SPRING_PROFILES_ACTIVE=${{ env.SPRING_PROFILES_ACTIVE }}
                     APP_PORT=${{ env.APP_PORT }}
@@ -66,10 +58,10 @@ jobs:
                     APP_HOST_PORT=${{ env.APP_HOST_PORT }}
                     EOT
 
-                    echo "=> Forçando a reconstrução da imagem sem cache..."
+                    echo "=> Forçando reconstrução da imagem sem cache..."
                     docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} build --no-cache
 
-                    echo "=> Forçando a recriação do container com a nova imagem..."
+                    echo "=> Forçando recriação do container..."
                     docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} up -d --force-recreate
 
                     echo "=> Limpando arquivo .env temporário..."
