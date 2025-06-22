@@ -34,7 +34,7 @@ jobs:
               run: |
                   ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
                     set -e
-                    cd ${{ secrets.VPS_PROJECT_PATH }}
+                    cd ${{ secrets.VPS_BACKEND_PATH }}
                     
                     echo "=> Atualizando código da branch HOMOLOG..."
                     git pull origin homol
