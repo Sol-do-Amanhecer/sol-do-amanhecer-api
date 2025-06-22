@@ -18,52 +18,46 @@ jobs:
                   echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
                   chmod 600 ~/.ssh/id_rsa
                   ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-
+            
+            - name: Gerar arquivo .env localmente
+              run: |
+                  cat > .env <<EOF
+                    SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}
+                    APP_PORT=${{ secrets.APP_PORT }}
+                    POSTGRES_HOST_PORT=${{ secrets.POSTGRES_HOST_PORT }}
+                    POSTGRES_PORT=${{ secrets.POSTGRES_HOST_PORT }}
+                    POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+                    POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+                    POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+                    APP_HOST_PORT=${{ secrets.APP_HOST_PORT }}
+                  EOF
+            - name: Enviar .env para VPS
+              run: |
+                  scp -i ~/.ssh/id_rsa .env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_BACKEND_PATH }}/.env
             - name: Deploy na VPS (Homologação)
               env:
-                  # As secrets são carregadas do environment 'homologacao'
                   SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
                   APP_PORT: ${{ secrets.APP_PORT }}
                   POSTGRES_HOST_PORT: ${{ secrets.POSTGRES_HOST_PORT }}
-                  POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }} # <-- Deve apontar para o secret correto
+                  POSTGRES_PORT: ${{ secrets.POSTGRES_HOST_PORT }}
                   POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
                   POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
                   POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
                   APP_HOST_PORT: ${{ secrets.APP_HOST_PORT }}
                   COMPOSE_PROJECT_NAME: api-homolog
+
               run: |
                   ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
                     set -e
                     cd ${{ secrets.VPS_BACKEND_PATH }}
                     
                     echo "=> Atualizando código da branch HOMOLOG..."
-                    if [ ! -d ".git" ]; then
-                      echo "=> Repositório não encontrado, clonando..."
-                      git clone git@github.com-api-deploy:Sol-do-Amanhecer/sol-do-amanhecer-api.git .
-                    else
-                      echo "=> Repositório encontrado, atualizando..."
-                      git fetch origin
-                      git reset --hard origin/homol
-                    fi
-                    
-                    echo "=> Preparando variáveis de ambiente..."
-                    cat > .env << EOT
-                    SPRING_PROFILES_ACTIVE=${{ env.SPRING_PROFILES_ACTIVE }}
-                    APP_PORT=${{ env.APP_PORT }}
-                    POSTGRES_HOST_PORT=${{ env.POSTGRES_HOST_PORT }}
-                    POSTGRES_PORT=${{ env.POSTGRES_PORT }}
-                    POSTGRES_DB=${{ env.POSTGRES_DB }}
-                    POSTGRES_USER=${{ env.POSTGRES_USER }}
-                    POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
-                    APP_HOST_PORT=${{ env.APP_HOST_PORT }}
-                    EOT
-
-                    echo "=> Forçando reconstrução da imagem sem cache..."
+                    git pull origin homol
+                     
+                    echo "=> Forçando a reconstrução da imagem sem cache..."
                     docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} build --no-cache
-
-                    echo "=> Forçando recriação do container..."
+                    echo "=> Forçando a recriação do container com a nova imagem..."
                     docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} up -d --force-recreate
-
                     echo "=> Limpando arquivo .env temporário..."
                     rm .env
                   EOF
