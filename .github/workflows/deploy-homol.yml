@@ -32,14 +32,29 @@ jobs:
                   COMPOSE_PROJECT_NAME: api-homolog
 
               run: |
-                  ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
-                    # O caminho vem do secret VPS_BACKEND_PATH que deve estar configurado no ambiente
+                  ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+                    set -e
                     cd ${{ secrets.VPS_BACKEND_PATH }}
                     
                     echo "=> Atualizando código da branch HOMOLOG..."
                     git fetch origin
                     git reset --hard origin/homol
                     
+                    echo "=> Preparando variáveis de ambiente para homologação..."
+                    cat > .env << EOT
+                    SPRING_PROFILES_ACTIVE=${{ env.SPRING_PROFILES_ACTIVE }}
+                    APP_PORT=${{ env.APP_PORT }}
+                    POSTGRES_HOST_PORT=${{ env.POSTGRES_HOST_PORT }}
+                    POSTGRES_PORT=${{ env.POSTGRES_PORT }}
+                    POSTGRES_DB=${{ env.POSTGRES_DB }}
+                    POSTGRES_USER=${{ env.POSTGRES_USER }}
+                    POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
+                    APP_HOST_PORT=${{ env.APP_HOST_PORT }}
+                    EOT
+
                     echo "=> Subindo ambiente de HOMOLOGAÇÃO..."
-                    docker compose up -d --build
+                    docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} up -d --build
+
+                    echo "=> Limpando arquivo .env temporário..."
+                    rm .env
                   EOF
