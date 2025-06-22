@@ -32,12 +32,27 @@ jobs:
                   COMPOSE_PROJECT_NAME: api-homolog
 
               run: |
+                  # ==================== PASSO DE DEBUG ====================
+                  echo "--- INICIANDO DEBUG DE SECRETS ---"
+                  echo "O workflow está lendo o secret POSTGRES_PORT com o valor: ${{ secrets.POSTGRES_PORT }}"
+                  echo "O workflow está lendo o secret POSTGRES_HOST_PORT com o valor: ${{ secrets.POSTGRES_HOST_PORT }}"
+                  echo "--- FIM DO DEBUG ---"
+                  # ========================================================
+
                   ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
                     set -e
                     cd ${{ secrets.VPS_BACKEND_PATH }}
                     
                     echo "=> Atualizando código da branch HOMOLOG..."
-                    git pull origin homol
+                    # Se a pasta .git não existir, clona o repositório. Senão, só atualiza.
+                    if [ ! -d ".git" ]; then
+                      echo "=> Repositório não encontrado, clonando pela primeira vez..."
+                      git clone git@github.com-api-deploy:Sol-do-Amanhecer/sol-do-amanhecer-api.git .
+                    else
+                      echo "=> Repositório encontrado, atualizando..."
+                      git fetch origin
+                      git reset --hard origin/homol
+                    fi
                     
                     echo "=> Preparando variáveis de ambiente para homologação..."
                     cat > .env << EOT
