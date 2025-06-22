@@ -12,6 +12,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -121,26 +123,33 @@ public class VoluntarioServiceImpl implements VoluntarioService {
     }
 
     @Override
-    public List<VoluntarioResponseDTO> buscarTodos() {
-        LOGGER.info("Buscando todos os voluntários");
+    public Page<VoluntarioResponseDTO> buscarTodos(Boolean ativo, Pageable pageable) {
+        Page<Voluntario> voluntarios;
 
-        List<Voluntario> voluntarios = voluntarioRepository.findAll();
+        if (ativo != null) {
+            LOGGER.info("Buscando voluntários filtrados por ativo: {}", ativo);
+            voluntarios = voluntarioRepository.findByAtivo(ativo, pageable);
+        } else {
+            LOGGER.info("Buscando todos os voluntários sem filtro");
+            voluntarios = voluntarioRepository.findAll(pageable);
+        }
 
-        return voluntarios.stream().map(voluntario -> {
-            VoluntarioResponseDTO voluntarioResponseDTO = voluntarioMapper.entityParaResponseDto(voluntario);
+        return voluntarios.map(voluntario -> {
+            VoluntarioResponseDTO dto = voluntarioMapper.entityParaResponseDto(voluntario);
 
             List<Email> emails = emailRepository.findByVoluntario(voluntario);
             List<Telefone> telefones = telefoneRepository.findByVoluntario(voluntario);
-            FormularioVoluntario formulario = formularioVoluntarioRepository.findByVoluntario(voluntario).orElse(null);
 
-            voluntarioResponseDTO.setEmailDTOList(emails.stream().map(emailMapper::entityParaDto).collect(Collectors.toList()));
-            voluntarioResponseDTO.setTelefoneDTOList(telefones.stream().map(telefoneMapper::entityParaDto).collect(Collectors.toList()));
+            dto.setEmailDTOList(emails.stream().map(emailMapper::entityParaDto).collect(Collectors.toList()));
+            dto.setTelefoneDTOList(telefones.stream().map(telefoneMapper::entityParaDto).collect(Collectors.toList()));
+
+            FormularioVoluntario formulario = formularioVoluntarioRepository.findByVoluntario(voluntario).orElse(null);
             if (formulario != null) {
-                voluntarioResponseDTO.setFormularioDTO(formularioMapper.entityParaDto(formulario));
+                dto.setFormularioDTO(formularioMapper.entityParaDto(formulario));
             }
 
-            return voluntarioResponseDTO;
-        }).collect(Collectors.toList());
+            return dto;
+        });
     }
 
     private void atualizarEmails(Voluntario voluntario, List<EmailDTO> emailDTOs) {

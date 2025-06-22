@@ -10,10 +10,13 @@ import br.com.sol_do_amanhecer.model.mapper.ImagemAcaoMapper;
 import br.com.sol_do_amanhecer.repository.AcaoRepository;
 import br.com.sol_do_amanhecer.repository.ImagemAcaoRepository;
 import br.com.sol_do_amanhecer.service.AcaoService;
+import br.com.sol_do_amanhecer.shared.enums.ETipoAcao;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -99,22 +102,43 @@ public class AcaoServiceImpl implements AcaoService {
     }
 
     @Override
-    public List<AcaoResponseDTO> buscarTodos() {
-        LOGGER.info("Buscando todas as ações");
+    public Page<AcaoResponseDTO> buscarTodos(ETipoAcao tipo, Integer ano, Integer mes, Pageable pageable) {
+        Page<Acao> acoes;
 
-        List<Acao> acoes = acaoRepository.findAll();
+        if (tipo != null && ano != null && mes != null) {
+            LOGGER.info("Buscando ações filtradas por tipo: {}, ano: {} e mês: {}", tipo, ano, mes);
+            acoes = acaoRepository.findByTipoAndAnoAndMes(tipo, ano, mes, pageable);
+        } else if (ano != null && mes != null) {
+            LOGGER.info("Buscando ações filtradas por ano: {} e mês: {}", ano, mes);
+            acoes = acaoRepository.findByAnoAndMes(ano, mes, pageable);
+        } else if (tipo != null && ano != null) {
+            LOGGER.info("Buscando ações filtradas por tipo: {} e ano: {}", tipo, ano);
+            acoes = acaoRepository.findByTipoAndAno(tipo, ano, pageable);
+        } else if (tipo != null) {
+            LOGGER.info("Buscando ações filtradas por tipo: {}", tipo);
+            acoes = acaoRepository.findByTipo(tipo, pageable);
+        } else if (ano != null) {
+            LOGGER.info("Buscando ações filtradas por ano: {}", ano);
+            acoes = acaoRepository.findByAno(ano, pageable);
+        } else if (mes != null) {
+            LOGGER.info("Buscando ações filtradas por mês: {}", mes);
+            acoes = acaoRepository.findByMes(mes, pageable);
+        } else {
+            LOGGER.info("Buscando todas as ações sem filtros");
+            acoes = acaoRepository.findAll(pageable);
+        }
 
-        return acoes.stream().map(acao -> {
+        return acoes.map(acao -> {
             AcaoResponseDTO acaoResponseDTO = new AcaoResponseDTO();
-
             acaoResponseDTO.setAcaoDTO(acaoMapper.entityParaDto(acao));
 
             List<ImagemAcao> imagens = imagemAcaoRepository.findByAcao(acao);
-
-           acaoResponseDTO.setImagemDTOList(imagens.stream().map(imagemAcaoMapper::entityParaDto).collect(Collectors.toList()));
+            acaoResponseDTO.setImagemDTOList(imagens.stream()
+                    .map(imagemAcaoMapper::entityParaDto)
+                    .collect(Collectors.toList()));
 
             return acaoResponseDTO;
-        }).collect(Collectors.toList());
+        });
     }
 
     private void atualizarImagens(Acao acaoExistente, List<ImagemAcaoDTO> imagemDTOs) {

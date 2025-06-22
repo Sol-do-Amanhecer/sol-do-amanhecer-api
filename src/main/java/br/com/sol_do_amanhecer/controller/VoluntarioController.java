@@ -8,11 +8,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.UUID;
 
 import static br.com.sol_do_amanhecer.shared.constant.PathsConstants.*;
@@ -50,10 +52,19 @@ public class VoluntarioController implements Serializable {
     }
 
     @GetMapping(value = TODOS_VOLUNTARIOS)
-    @Operation(summary = "Buscar todos os voluntários", description = "Retorna uma lista de todos os voluntários")
-    public ResponseEntity<List<VoluntarioResponseDTO>> buscarTodos() {
-        LOGGER.debug("Requisição para buscar todos os voluntários");
-        List<VoluntarioResponseDTO> voluntarios = this.voluntarioService.buscarTodos();
+    @Operation(summary = "Buscar todos os voluntários",
+            description = "Retorna uma lista paginada de voluntários, com filtro opcional por ativo."
+    )
+    public ResponseEntity<Page<VoluntarioResponseDTO>> buscarTodos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Boolean ativo) {
+
+        LOGGER.debug("Requisição para buscar voluntários com paginação");
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<VoluntarioResponseDTO> voluntarios = voluntarioService.buscarTodos(ativo, pageable);
+
         return ResponseEntity.ok().body(voluntarios);
     }
 

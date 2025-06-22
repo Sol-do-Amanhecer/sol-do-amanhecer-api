@@ -15,6 +15,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -57,13 +59,18 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
     }
 
     @Override
-    public List<UsuarioDTO> buscarTodos() {
-        LOGGER.info("Buscando todos usuarios");
-        return this.usuarioRepository
-                .findAll()
-                .stream()
-                .map(usuarioMapper::entityParaDto)
-                .toList();
+    public Page<UsuarioDTO> buscarTodos(Boolean ativo, Pageable pageable) {
+        LOGGER.info("Buscando usuários, filtro ativo: {}", ativo);
+
+        Page<Usuario> usuarios;
+
+        if (ativo != null) {
+            usuarios = usuarioRepository.findByAtivo(ativo, pageable);
+        } else {
+            usuarios = usuarioRepository.findAll(pageable);
+        }
+
+        return usuarios.map(usuarioMapper::entityParaDto);
     }
 
     @Override

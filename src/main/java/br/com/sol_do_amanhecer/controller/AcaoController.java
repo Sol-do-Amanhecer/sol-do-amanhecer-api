@@ -4,10 +4,15 @@ import br.com.sol_do_amanhecer.model.dto.AcaoDTO;
 import br.com.sol_do_amanhecer.model.dto.AcaoRequestDTO;
 import br.com.sol_do_amanhecer.model.dto.AcaoResponseDTO;
 import br.com.sol_do_amanhecer.service.AcaoService;
+import br.com.sol_do_amanhecer.shared.enums.ETipoAcao;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,11 +54,24 @@ public class AcaoController implements Serializable {
     }
 
     @GetMapping(value = TODAS_ACOES)
-    @Operation(summary = "Buscar todas as ações", description = "Retorna uma lista de todas as ações")
-    public ResponseEntity<List<AcaoResponseDTO>> buscarTodos() {
-        LOGGER.debug("Requisição para buscar todas as ações");
-        List<AcaoResponseDTO> acoes = this.acaoService.buscarTodos();
-        return ResponseEntity.ok().body(acoes);
+    @Operation(
+            summary = "Buscar todas as ações com paginação",
+            description = "Retorna uma lista paginada de todas as ações, ordenada por dataAcao. Permite filtros opcionais por tipo, ano e mês."
+    )
+    public ResponseEntity<Page<AcaoResponseDTO>> buscarTodos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) ETipoAcao tipo,
+            @RequestParam(required = false) Integer ano,
+            @RequestParam(required = false) Integer mes) {
+
+        LOGGER.debug("Requisição para buscar todas as ações com paginação");
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("dataAcao").ascending());
+
+        // Adiciona os filtros opcionais no serviço
+        Page<AcaoResponseDTO> resultado = acaoService.buscarTodos(tipo, ano, mes, pageable);
+        return ResponseEntity.ok().body(resultado);
     }
 
     @PutMapping(value = ATUALIZAR_ACAO)

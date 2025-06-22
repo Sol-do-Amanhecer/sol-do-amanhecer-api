@@ -5,12 +5,17 @@ import br.com.sol_do_amanhecer.model.entity.Doacao;
 import br.com.sol_do_amanhecer.model.mapper.DoacaoMapper;
 import br.com.sol_do_amanhecer.repository.DoacaoRepository;
 import br.com.sol_do_amanhecer.service.DoacaoService;
+import br.com.sol_do_amanhecer.shared.enums.EMeioDoacao;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -65,9 +70,21 @@ public class DoacaoServiceImpl implements DoacaoService {
     }
 
     @Override
-    public List<DoacaoDTO> buscarTodas() {
-        LOGGER.info("Buscando todas as doações");
-        List<Doacao> doacoes = doacaoRepository.findAll();
-        return doacoes.stream().map(doacaoMapper::entityParaDto).collect(Collectors.toList());
+    public Page<DoacaoDTO> buscarTodas(LocalDate dataInicio, LocalDate dataFim, EMeioDoacao meioDoacao, Pageable pageable) {
+        LOGGER.info("Buscando doações com os filtros: dataInicio={}, dataFim={}, meioDoacao={}", dataInicio, dataFim, meioDoacao);
+
+        Page<Doacao> doacoes;
+
+        if (meioDoacao != null && dataInicio != null && dataFim != null) {
+            doacoes = doacaoRepository.findByMeioDoacaoAndDataDoacaoBetween(meioDoacao, dataInicio, dataFim, pageable);
+        } else if (meioDoacao != null) {
+            doacoes = doacaoRepository.findByMeioDoacao(meioDoacao, pageable);
+        } else if (dataInicio != null && dataFim != null) {
+            doacoes = doacaoRepository.findByDataDoacaoBetween(dataInicio, dataFim, pageable);
+        } else {
+            doacoes = doacaoRepository.findAll(pageable);
+        }
+
+        return doacoes.map(doacaoMapper::entityParaDto);
     }
 }

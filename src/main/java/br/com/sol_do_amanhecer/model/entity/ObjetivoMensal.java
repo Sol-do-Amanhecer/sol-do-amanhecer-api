@@ -37,8 +37,6 @@ public class ObjetivoMensal {
     @Column(nullable = false)
     private Double objetivoArrecadacao;
 
-    @Column(nullable = false)
-    private Double objetivoGastos;
     @Transient
     private Double arrecadado;
 

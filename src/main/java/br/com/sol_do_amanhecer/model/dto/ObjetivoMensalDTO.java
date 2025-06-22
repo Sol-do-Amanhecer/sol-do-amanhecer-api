@@ -31,9 +31,6 @@ public class ObjetivoMensalDTO {
     @NotNull
     private Double objetivoArrecadacao;
 
-    @NotNull
-    private Double objetivoGastos;
-
     private Double arrecadado;
     private Double gasto;
     private Double percentualProgresso;

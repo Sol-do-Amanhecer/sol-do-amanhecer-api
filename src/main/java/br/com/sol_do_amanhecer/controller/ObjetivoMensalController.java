@@ -3,10 +3,14 @@ package br.com.sol_do_amanhecer.controller;
 import br.com.sol_do_amanhecer.model.dto.ObjetivoMensalDTO;
 import br.com.sol_do_amanhecer.model.dto.ObjetivoMensalRequestDTO;
 import br.com.sol_do_amanhecer.service.ObjetivoMensalService;
+import br.com.sol_do_amanhecer.shared.enums.EMes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,10 +49,21 @@ public class ObjetivoMensalController implements Serializable {
     }
 
     @GetMapping(value = TODOS_OBJETIVOS)
-    @Operation(summary = "Buscar todos os objetivos mensais", description = "Retorna uma lista de todos os objetivos mensais")
-    public ResponseEntity<List<ObjetivoMensalDTO>> buscarTodos() {
-        LOGGER.debug("Requisição para buscar todos os objetivos mensais");
-        List<ObjetivoMensalDTO> objetivos = objetivoMensalService.buscarTodos();
+    @Operation(
+            summary = "Buscar todos os objetivos mensais",
+            description = "Retorna uma lista paginada de objetivos mensais, com filtro opcional por mês e ano."
+    )
+    public ResponseEntity<Page<ObjetivoMensalDTO>> buscarTodos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) EMes mes,
+            @RequestParam(required = false) Integer ano) {
+
+        LOGGER.debug("Requisição para buscar objetivos mensais com paginação e filtros");
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ObjetivoMensalDTO> objetivos = objetivoMensalService.buscarTodos(mes, ano, pageable);
+
         return ResponseEntity.ok().body(objetivos);
     }
 

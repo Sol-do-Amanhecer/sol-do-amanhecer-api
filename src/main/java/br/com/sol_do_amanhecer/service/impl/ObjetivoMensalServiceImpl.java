@@ -5,22 +5,26 @@ import br.com.sol_do_amanhecer.model.dto.ObjetivoMensalRequestDTO;
 import br.com.sol_do_amanhecer.model.entity.ObjetivoMensal;
 import br.com.sol_do_amanhecer.model.mapper.ObjetivoMensalMapper;
 import br.com.sol_do_amanhecer.repository.DoacaoRepository;
-import br.com.sol_do_amanhecer.repository.PrestacaoContasRepository;
 import br.com.sol_do_amanhecer.repository.ObjetivoMensalRepository;
+import br.com.sol_do_amanhecer.repository.PrestacaoContasRepository;
 import br.com.sol_do_amanhecer.service.ObjetivoMensalService;
+import br.com.sol_do_amanhecer.shared.enums.EMes;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ObjetivoMensalServiceImpl implements ObjetivoMensalService {
 
+    private final Logger LOGGER = LoggerFactory.getLogger(ObjetivoMensalServiceImpl.class);
     private final ObjetivoMensalRepository objetivoMensalRepository;
     private final DoacaoRepository doacaoRepository;
     private final PrestacaoContasRepository prestacaoContasRepository;
@@ -35,7 +39,6 @@ public class ObjetivoMensalServiceImpl implements ObjetivoMensalService {
                 .mes(requestDTO.getMes())
                 .ano(requestDTO.getAno())
                 .objetivoArrecadacao(requestDTO.getObjetivoArrecadacao())
-                .objetivoGastos(requestDTO.getObjetivoGastos())
                 .build();
 
         objetivoMensal = objetivoMensalRepository.save(objetivoMensal);
@@ -53,7 +56,6 @@ public class ObjetivoMensalServiceImpl implements ObjetivoMensalService {
         objetivo.setMes(requestDTO.getMes());
         objetivo.setAno(requestDTO.getAno());
         objetivo.setObjetivoArrecadacao(requestDTO.getObjetivoArrecadacao());
-        objetivo.setObjetivoGastos(requestDTO.getObjetivoGastos());
 
         objetivoMensalRepository.save(objetivo);
     }
@@ -68,15 +70,29 @@ public class ObjetivoMensalServiceImpl implements ObjetivoMensalService {
     }
 
     @Override
-    public List<ObjetivoMensalDTO> buscarTodos() {
-        List<ObjetivoMensal> objetivos = objetivoMensalRepository.findAll();
+    public Page<ObjetivoMensalDTO> buscarTodos(EMes mes, Integer ano, Pageable pageable) {
+        LOGGER.info("Buscando objetivos mensais com filtros: mes={}, ano={}", mes, ano);
 
-        return objetivos.stream()
-                .map(objetivo -> {
-                    calcularValoresDinamicos(objetivo);
-                    return mapper.entityParaDto(objetivo);
-                })
-                .collect(Collectors.toList());
+        Page<ObjetivoMensal> objetivos;
+
+        if (mes != null && ano != null) {
+            LOGGER.info("Filtrando por mês e ano");
+            objetivos = objetivoMensalRepository.findByMesAndAno(mes, ano, pageable);
+        } else if (mes != null) {
+            LOGGER.info("Filtrando apenas por mês");
+            objetivos = objetivoMensalRepository.findByMes(mes, pageable);
+        } else if (ano != null) {
+            LOGGER.info("Filtrando apenas por ano");
+            objetivos = objetivoMensalRepository.findByAno(ano, pageable);
+        } else {
+            LOGGER.info("Nenhum filtro aplicado, retornando todos os objetivos");
+            objetivos = objetivoMensalRepository.findAll(pageable);
+        }
+
+        return objetivos.map(objetivo -> {
+            calcularValoresDinamicos(objetivo); // Calcula os campos dinâmicos como arrecadado, gasto, etc.
+            return mapper.entityParaDto(objetivo);
+        });
     }
 
     @Override

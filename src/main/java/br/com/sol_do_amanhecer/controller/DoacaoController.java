@@ -2,14 +2,19 @@ package br.com.sol_do_amanhecer.controller;
 
 import br.com.sol_do_amanhecer.model.dto.DoacaoDTO;
 import br.com.sol_do_amanhecer.service.DoacaoService;
+import br.com.sol_do_amanhecer.shared.enums.EMeioDoacao;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,10 +49,22 @@ public class DoacaoController implements Serializable {
     }
 
     @GetMapping(value = TODAS_DOACOES)
-    @Operation(summary = "Buscar todas as doações", description = "Retorna uma lista de todas as doações")
-    public ResponseEntity<List<DoacaoDTO>> buscarTodas() {
-        LOGGER.debug("Requisição para buscar todas as doações");
-        List<DoacaoDTO> doacoes = doacaoService.buscarTodas();
+    @Operation(
+            summary = "Buscar todas as doações com filtros",
+            description = "Retorna uma lista de doações paginadas, com filtros opcionais por intervalo de data (dataInicio e dataFim) e meio de doação."
+    )
+    public ResponseEntity<Page<DoacaoDTO>> buscarTodas(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) LocalDate dataInicio,
+            @RequestParam(required = false) LocalDate dataFim,
+            @RequestParam(required = false) EMeioDoacao meioDoacao) {
+
+        LOGGER.debug("Requisição para buscar todas as doações com filtros");
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DoacaoDTO> doacoes = doacaoService.buscarTodas(dataInicio, dataFim, meioDoacao, pageable);
+
         return ResponseEntity.ok().body(doacoes);
     }
 

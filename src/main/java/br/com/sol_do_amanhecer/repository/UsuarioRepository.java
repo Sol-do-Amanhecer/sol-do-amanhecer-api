@@ -1,6 +1,8 @@
 package br.com.sol_do_amanhecer.repository;
 
 import br.com.sol_do_amanhecer.model.entity.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +12,9 @@ import java.util.UUID;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
+
     @Query("SELECT u FROM Usuario u WHERE u.usuario = :usuario")
     Usuario findByUsuario(@Param("usuario") String usuario);
+
+    Page<Usuario> findByAtivo(Boolean ativo, Pageable pageable);
 }

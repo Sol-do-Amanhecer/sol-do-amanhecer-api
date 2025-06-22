@@ -9,6 +9,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -66,9 +68,25 @@ public class PrestacaoContasServiceImpl implements PrestacaoContasService {
     }
 
     @Override
-    public List<PrestacaoContasDTO> buscarTodas() {
-        LOGGER.info("Buscando todas as prestações de contas");
-        List<PrestacaoContas> prestacoes = prestacaoContasRepository.findAll();
-        return prestacoes.stream().map(prestacaoContasMapper::entityParaDto).collect(Collectors.toList());
+    public Page<PrestacaoContasDTO> buscarTodas(Integer mes, Integer ano, Pageable pageable) {
+        LOGGER.info("Buscando prestações de contas com filtro: mês={}, ano={}", mes, ano);
+
+        Page<PrestacaoContas> prestacoes;
+
+        if (mes != null && ano != null) {
+            LOGGER.info("Filtrando por mês e ano");
+            prestacoes = prestacaoContasRepository.findByMesEAno(mes, ano, pageable);
+        } else if (mes != null) {
+            LOGGER.info("Filtrando apenas por mês");
+            prestacoes = prestacaoContasRepository.findByMes(mes, pageable);
+        } else if (ano != null) {
+            LOGGER.info("Filtrando apenas por ano");
+            prestacoes = prestacaoContasRepository.findByAno(ano, pageable);
+        } else {
+            LOGGER.info("Nenhum filtro aplicado, retornando todas as prestações");
+            prestacoes = prestacaoContasRepository.findAll(pageable);
+        }
+
+        return prestacoes.map(prestacaoContasMapper::entityParaDto);
     }
 }
