@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Testes do AutenticacaoServiceImpl")
 public class AutenticacaoServiceImplTest {
     public static final int HORA_EM_MILISSEGUNDO = 3600000;
 
@@ -43,22 +44,25 @@ public class AutenticacaoServiceImplTest {
     @Test
     @DisplayName("Deve retornar TokenDTO ao autenticar com credenciais válidas")
     void entrarComCredenciaisValidas() {
+        UUID usuarioUuid = UUID.randomUUID();
         LoginDTO loginDTO = new LoginDTO("usuarioValido", "senhaCorreta");
+
         Usuario usuarioEntity = new Usuario();
+        usuarioEntity.setUuid(usuarioUuid);
         usuarioEntity.setUsuario("usuarioValido");
         usuarioEntity.setSenha("senhaCodificada");
 
         List<Permissao> permissoes = Collections.singletonList(new Permissao(UUID.randomUUID(), "ROLE_USER"));
         usuarioEntity.setPermissoes(permissoes);
 
-        TokenDTO tokenDTOEsperado = new TokenDTO(
+        TokenDTO tokenDTOEsperado = new TokenDTO(usuarioUuid,
                 "usuarioValido", true, new Date(), new Date(System.currentTimeMillis() + HORA_EM_MILISSEGUNDO),
                 "accessTokenGerado", "refreshTokenGerado"
         );
 
         when(usuarioRepository.findByUsuario("usuarioValido")).thenReturn(usuarioEntity);
         when(passwordEncoder.matches("senhaCorreta", usuarioEntity.getSenha())).thenReturn(true);
-        when(jwtTokenProvider.criarTokenAcesso("usuarioValido", permissoes))
+        when(jwtTokenProvider.criarTokenAcesso(usuarioUuid, "usuarioValido", permissoes))
                 .thenReturn(tokenDTOEsperado);
 
         TokenDTO resultado = autenticacaoService.entrar(loginDTO);
@@ -68,15 +72,88 @@ public class AutenticacaoServiceImplTest {
 
         verify(usuarioRepository, times(1)).findByUsuario("usuarioValido");
         verify(passwordEncoder, times(1)).matches("senhaCorreta", usuarioEntity.getSenha());
-        verify(jwtTokenProvider, times(1)).criarTokenAcesso("usuarioValido", permissoes);
+        verify(jwtTokenProvider, times(1)).criarTokenAcesso(usuarioUuid, "usuarioValido", permissoes);
         verifyNoMoreInteractions(usuarioRepository, passwordEncoder, jwtTokenProvider);
+    }
+
+    @Test
+    @DisplayName("Deve retornar TokenDTO ao autenticar usuário sem permissões")
+    void entrarComUsuarioSemPermissoes() {
+        UUID usuarioUuid = UUID.randomUUID();
+        LoginDTO loginDTO = new LoginDTO("usuarioSemPermissoes", "senhaCorreta");
+
+        Usuario usuarioEntity = new Usuario();
+        usuarioEntity.setUuid(usuarioUuid);
+        usuarioEntity.setUsuario("usuarioSemPermissoes");
+        usuarioEntity.setSenha("senhaCodificada");
+        usuarioEntity.setPermissoes(Collections.emptyList());
+
+        TokenDTO tokenDTOEsperado = new TokenDTO( usuarioUuid,
+                "usuarioSemPermissoes", true, new Date(), new Date(System.currentTimeMillis() + HORA_EM_MILISSEGUNDO),
+                "accessTokenGerado", "refreshTokenGerado"
+        );
+
+        when(usuarioRepository.findByUsuario("usuarioSemPermissoes")).thenReturn(usuarioEntity);
+        when(passwordEncoder.matches("senhaCorreta", usuarioEntity.getSenha())).thenReturn(true);
+        when(jwtTokenProvider.criarTokenAcesso(usuarioUuid, "usuarioSemPermissoes", Collections.emptyList()))
+                .thenReturn(tokenDTOEsperado);
+
+        TokenDTO resultado = autenticacaoService.entrar(loginDTO);
+
+        assertNotNull(resultado, "O TokenDTO não deve ser nulo.");
+        assertEquals(tokenDTOEsperado, resultado, "O TokenDTO retornado deve ser o esperado.");
+
+        verify(usuarioRepository, times(1)).findByUsuario("usuarioSemPermissoes");
+        verify(passwordEncoder, times(1)).matches("senhaCorreta", usuarioEntity.getSenha());
+        verify(jwtTokenProvider, times(1)).criarTokenAcesso(usuarioUuid, "usuarioSemPermissoes", Collections.emptyList());
+    }
+
+    @Test
+    @DisplayName("Deve retornar TokenDTO ao autenticar usuário com múltiplas permissões")
+    void entrarComUsuarioComMultiplasPermissoes() {
+        UUID usuarioUuid = UUID.randomUUID();
+        LoginDTO loginDTO = new LoginDTO("usuarioAdmin", "senhaCorreta");
+
+        Usuario usuarioEntity = new Usuario();
+        usuarioEntity.setUuid(usuarioUuid);
+        usuarioEntity.setUsuario("usuarioAdmin");
+        usuarioEntity.setSenha("senhaCodificada");
+
+        List<Permissao> permissoes = List.of(
+                new Permissao(UUID.randomUUID(), "ROLE_USER"),
+                new Permissao(UUID.randomUUID(), "ROLE_ADMIN"),
+                new Permissao(UUID.randomUUID(), "ROLE_MANAGER")
+        );
+        usuarioEntity.setPermissoes(permissoes);
+
+        TokenDTO tokenDTOEsperado = new TokenDTO(usuarioUuid,
+                "usuarioAdmin", true, new Date(), new Date(System.currentTimeMillis() + HORA_EM_MILISSEGUNDO),
+                "accessTokenGerado", "refreshTokenGerado"
+        );
+
+        when(usuarioRepository.findByUsuario("usuarioAdmin")).thenReturn(usuarioEntity);
+        when(passwordEncoder.matches("senhaCorreta", usuarioEntity.getSenha())).thenReturn(true);
+        when(jwtTokenProvider.criarTokenAcesso(usuarioUuid, "usuarioAdmin", permissoes))
+                .thenReturn(tokenDTOEsperado);
+
+        TokenDTO resultado = autenticacaoService.entrar(loginDTO);
+
+        assertNotNull(resultado, "O TokenDTO não deve ser nulo.");
+        assertEquals(tokenDTOEsperado, resultado, "O TokenDTO retornado deve ser o esperado.");
+
+        verify(usuarioRepository, times(1)).findByUsuario("usuarioAdmin");
+        verify(passwordEncoder, times(1)).matches("senhaCorreta", usuarioEntity.getSenha());
+        verify(jwtTokenProvider, times(1)).criarTokenAcesso(usuarioUuid, "usuarioAdmin", permissoes);
     }
 
     @Test
     @DisplayName("Deve lançar BadCredentialsException para senha inválida")
     void entrarComSenhaInvalida() {
+        UUID usuarioUuid = UUID.randomUUID();
         LoginDTO loginDTO = new LoginDTO("usuarioValido", "senhaIncorreta");
+
         Usuario usuarioEntity = new Usuario();
+        usuarioEntity.setUuid(usuarioUuid);
         usuarioEntity.setUsuario("usuarioValido");
         usuarioEntity.setSenha("senhaCodificada");
 
@@ -90,6 +167,7 @@ public class AutenticacaoServiceImplTest {
 
         verify(usuarioRepository, times(1)).findByUsuario("usuarioValido");
         verify(passwordEncoder, times(1)).matches("senhaIncorreta", usuarioEntity.getSenha());
+        verify(jwtTokenProvider, never()).criarTokenAcesso(any(), any(), any());
         verifyNoMoreInteractions(usuarioRepository, passwordEncoder, jwtTokenProvider);
     }
 
@@ -106,7 +184,36 @@ public class AutenticacaoServiceImplTest {
         assertEquals("Usuário: usuarioInexistente não encontrado", thrown.getMessage());
 
         verify(usuarioRepository, times(1)).findByUsuario("usuarioInexistente");
+        verify(passwordEncoder, never()).matches(any(), any());
+        verify(jwtTokenProvider, never()).criarTokenAcesso(any(), any(), any());
         verifyNoMoreInteractions(usuarioRepository, passwordEncoder, jwtTokenProvider);
+    }
+
+    @Test
+    @DisplayName("Deve lançar BadCredentialsException quando JwtTokenProvider lança exceção")
+    void entrarComErroNoJwtProvider() {
+        UUID usuarioUuid = UUID.randomUUID();
+        LoginDTO loginDTO = new LoginDTO("usuarioValido", "senhaCorreta");
+
+        Usuario usuarioEntity = new Usuario();
+        usuarioEntity.setUuid(usuarioUuid);
+        usuarioEntity.setUsuario("usuarioValido");
+        usuarioEntity.setSenha("senhaCodificada");
+        usuarioEntity.setPermissoes(Collections.emptyList());
+
+        when(usuarioRepository.findByUsuario("usuarioValido")).thenReturn(usuarioEntity);
+        when(passwordEncoder.matches("senhaCorreta", usuarioEntity.getSenha())).thenReturn(true);
+        when(jwtTokenProvider.criarTokenAcesso(usuarioUuid, "usuarioValido", Collections.emptyList()))
+                .thenThrow(new BadCredentialsException("Erro ao gerar token"));
+
+        BadCredentialsException thrown = assertThrows(BadCredentialsException.class,
+                () -> autenticacaoService.entrar(loginDTO),
+                "Deve propagar BadCredentialsException do JwtTokenProvider.");
+        assertEquals("Erro ao gerar token", thrown.getMessage());
+
+        verify(usuarioRepository, times(1)).findByUsuario("usuarioValido");
+        verify(passwordEncoder, times(1)).matches("senhaCorreta", usuarioEntity.getSenha());
+        verify(jwtTokenProvider, times(1)).criarTokenAcesso(usuarioUuid, "usuarioValido", Collections.emptyList());
     }
 
     @Test
@@ -118,7 +225,7 @@ public class AutenticacaoServiceImplTest {
         Usuario usuarioEntity = new Usuario();
         usuarioEntity.setUsuario(usuario);
 
-        TokenDTO tokenDTOEsperado = new TokenDTO(
+        TokenDTO tokenDTOEsperado = new TokenDTO( usuarioEntity.getUuid(),
                 usuario, true, new Date(), new Date(System.currentTimeMillis() + HORA_EM_MILISSEGUNDO),
                 "novoAccessToken", "novoRefreshToken"
         );
@@ -150,6 +257,7 @@ public class AutenticacaoServiceImplTest {
         assertEquals("Usuário: usuarioInexistente não encontrado", thrown.getMessage());
 
         verify(usuarioRepository, times(1)).findByUsuario(usuario);
+        verify(jwtTokenProvider, never()).criarRefreshToken(any());
         verifyNoMoreInteractions(usuarioRepository, jwtTokenProvider, passwordEncoder);
     }
 
@@ -176,4 +284,79 @@ public class AutenticacaoServiceImplTest {
         verifyNoMoreInteractions(usuarioRepository, jwtTokenProvider, passwordEncoder);
     }
 
+    @Test
+    @DisplayName("Deve tratar corretamente quando usuário tem permissões nulas")
+    void entrarComPermissoesNulas() {
+        UUID usuarioUuid = UUID.randomUUID();
+        LoginDTO loginDTO = new LoginDTO("usuarioComPermissoesNulas", "senhaCorreta");
+
+        Usuario usuarioEntity = new Usuario();
+        usuarioEntity.setUuid(usuarioUuid);
+        usuarioEntity.setUsuario("usuarioComPermissoesNulas");
+        usuarioEntity.setSenha("senhaCodificada");
+        usuarioEntity.setPermissoes(null);
+
+        TokenDTO tokenDTOEsperado = new TokenDTO(
+                usuarioUuid, "usuarioComPermissoesNulas", true, new Date(), new Date(System.currentTimeMillis() + HORA_EM_MILISSEGUNDO),
+                "accessTokenGerado", "refreshTokenGerado"
+        );
+
+        when(usuarioRepository.findByUsuario("usuarioComPermissoesNulas")).thenReturn(usuarioEntity);
+        when(passwordEncoder.matches("senhaCorreta", usuarioEntity.getSenha())).thenReturn(true);
+        when(jwtTokenProvider.criarTokenAcesso(usuarioUuid, "usuarioComPermissoesNulas", null))
+                .thenReturn(tokenDTOEsperado);
+
+        TokenDTO resultado = autenticacaoService.entrar(loginDTO);
+
+        assertNotNull(resultado, "O TokenDTO não deve ser nulo.");
+        assertEquals(tokenDTOEsperado, resultado, "O TokenDTO retornado deve ser o esperado.");
+
+        verify(usuarioRepository, times(1)).findByUsuario("usuarioComPermissoesNulas");
+        verify(passwordEncoder, times(1)).matches("senhaCorreta", usuarioEntity.getSenha());
+        verify(jwtTokenProvider, times(1)).criarTokenAcesso(usuarioUuid, "usuarioComPermissoesNulas", null);
+    }
+
+    @Test
+    @DisplayName("Deve tratar corretamente refresh token com token vazio")
+    void refreshTokenComTokenVazio() {
+        String usuario = "usuarioValido";
+        String refreshToken = "";
+
+        Usuario usuarioEntity = new Usuario();
+        usuarioEntity.setUsuario(usuario);
+
+        when(usuarioRepository.findByUsuario(usuario)).thenReturn(usuarioEntity);
+        when(jwtTokenProvider.criarRefreshToken(refreshToken))
+                .thenThrow(new BadCredentialsException("Empty refresh token!"));
+
+        BadCredentialsException thrown = assertThrows(BadCredentialsException.class,
+                () -> autenticacaoService.refreshToken(usuario, refreshToken),
+                "Deve lançar BadCredentialsException para refresh token vazio.");
+        assertEquals("Empty refresh token!", thrown.getMessage());
+
+        verify(usuarioRepository, times(1)).findByUsuario(usuario);
+        verify(jwtTokenProvider, times(1)).criarRefreshToken(refreshToken);
+    }
+
+    @Test
+    @DisplayName("Deve tratar corretamente refresh token com token nulo")
+    void refreshTokenComTokenNulo() {
+        String usuario = "usuarioValido";
+        String refreshToken = "teste-token";
+
+        Usuario usuarioEntity = new Usuario();
+        usuarioEntity.setUsuario(usuario);
+
+        when(usuarioRepository.findByUsuario(usuario)).thenReturn(usuarioEntity);
+        when(jwtTokenProvider.criarRefreshToken(refreshToken))
+                .thenThrow(new BadCredentialsException("Null refresh token!"));
+
+        BadCredentialsException thrown = assertThrows(BadCredentialsException.class,
+                () -> autenticacaoService.refreshToken(usuario, refreshToken),
+                "Deve lançar BadCredentialsException para refresh token nulo.");
+        assertEquals("Null refresh token!", thrown.getMessage());
+
+        verify(usuarioRepository, times(1)).findByUsuario(usuario);
+        verify(jwtTokenProvider, times(1)).criarRefreshToken(refreshToken);
+    }
 }

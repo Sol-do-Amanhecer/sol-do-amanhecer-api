@@ -13,6 +13,10 @@ import br.com.sol_do_amanhecer.repository.VoluntarioRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -22,6 +26,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
+@DisplayName("Testes do UsuarioServiceImpl")
 class UsuarioServiceImplTest {
 
     @Mock
@@ -118,27 +123,100 @@ class UsuarioServiceImplTest {
     }
 
     @Test
-    @DisplayName("Deve retornar lista de UsuarioDTO ao buscar todos os usuários")
-    void buscarTodos_sucesso() {
+    @DisplayName("Deve retornar Page de UsuarioDTO ao buscar todos os usuários sem filtro")
+    void buscarTodos_semFiltro_sucesso() {
         Usuario entity1 = new Usuario();
         entity1.setUsuario("user1");
         Usuario entity2 = new Usuario();
         entity2.setUsuario("user2");
-        List<Usuario> listaEntity = Arrays.asList(entity1, entity2);
 
-        UsuarioDTO dto1 = new UsuarioDTO(); dto1.setUsuario("user1");
-        UsuarioDTO dto2 = new UsuarioDTO(); dto2.setUsuario("user2");
+        Page<Usuario> pageEntity = new PageImpl<>(Arrays.asList(entity1, entity2));
+        Pageable pageable = PageRequest.of(0, 10);
 
-        when(usuarioRepository.findAll()).thenReturn(listaEntity);
+        UsuarioDTO dto1 = new UsuarioDTO();
+        dto1.setUsuario("user1");
+        UsuarioDTO dto2 = new UsuarioDTO();
+        dto2.setUsuario("user2");
+
+        when(usuarioRepository.findAll(pageable)).thenReturn(pageEntity);
         when(usuarioMapper.entityParaDto(entity1)).thenReturn(dto1);
         when(usuarioMapper.entityParaDto(entity2)).thenReturn(dto2);
 
-        List<UsuarioDTO> resultado = usuarioService.buscarTodos();
+        Page<UsuarioDTO> resultado = usuarioService.buscarTodos(null, pageable);
 
-        assertThat(resultado).containsExactlyInAnyOrder(dto1, dto2);
-        verify(usuarioRepository).findAll();
+        assertThat(resultado.getContent()).containsExactlyInAnyOrder(dto1, dto2);
+        assertThat(resultado.getTotalElements()).isEqualTo(2);
+        verify(usuarioRepository).findAll(pageable);
+        verify(usuarioRepository, never()).findByAtivo(anyBoolean(), any(Pageable.class));
         verify(usuarioMapper).entityParaDto(entity1);
         verify(usuarioMapper).entityParaDto(entity2);
+    }
+
+    @Test
+    @DisplayName("Deve retornar Page de UsuarioDTO ao buscar usuários ativos")
+    void buscarTodos_comFiltroAtivo_sucesso() {
+        Usuario entity1 = new Usuario();
+        entity1.setUsuario("user1");
+        entity1.setAtivo(true);
+
+        Page<Usuario> pageEntity = new PageImpl<>(Arrays.asList(entity1));
+        Pageable pageable = PageRequest.of(0, 10);
+
+        UsuarioDTO dto1 = new UsuarioDTO();
+        dto1.setUsuario("user1");
+        dto1.setAtivo(true);
+
+        when(usuarioRepository.findByAtivo(true, pageable)).thenReturn(pageEntity);
+        when(usuarioMapper.entityParaDto(entity1)).thenReturn(dto1);
+
+        Page<UsuarioDTO> resultado = usuarioService.buscarTodos(true, pageable);
+
+        assertThat(resultado.getContent()).containsExactly(dto1);
+        assertThat(resultado.getTotalElements()).isEqualTo(1);
+        verify(usuarioRepository).findByAtivo(true, pageable);
+        verify(usuarioRepository, never()).findAll(any(Pageable.class));
+        verify(usuarioMapper).entityParaDto(entity1);
+    }
+
+    @Test
+    @DisplayName("Deve retornar Page de UsuarioDTO ao buscar usuários inativos")
+    void buscarTodos_comFiltroInativo_sucesso() {
+        Usuario entity1 = new Usuario();
+        entity1.setUsuario("user1");
+        entity1.setAtivo(false);
+
+        Page<Usuario> pageEntity = new PageImpl<>(Arrays.asList(entity1));
+        Pageable pageable = PageRequest.of(0, 10);
+
+        UsuarioDTO dto1 = new UsuarioDTO();
+        dto1.setUsuario("user1");
+        dto1.setAtivo(false);
+
+        when(usuarioRepository.findByAtivo(false, pageable)).thenReturn(pageEntity);
+        when(usuarioMapper.entityParaDto(entity1)).thenReturn(dto1);
+
+        Page<UsuarioDTO> resultado = usuarioService.buscarTodos(false, pageable);
+
+        assertThat(resultado.getContent()).containsExactly(dto1);
+        assertThat(resultado.getTotalElements()).isEqualTo(1);
+        verify(usuarioRepository).findByAtivo(false, pageable);
+        verify(usuarioRepository, never()).findAll(any(Pageable.class));
+        verify(usuarioMapper).entityParaDto(entity1);
+    }
+
+    @Test
+    @DisplayName("Deve retornar Page vazia quando não há usuários")
+    void buscarTodos_pageVazia() {
+        Page<Usuario> pageEntity = new PageImpl<>(Collections.emptyList());
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(usuarioRepository.findAll(pageable)).thenReturn(pageEntity);
+
+        Page<UsuarioDTO> resultado = usuarioService.buscarTodos(null, pageable);
+
+        assertThat(resultado.getContent()).isEmpty();
+        assertThat(resultado.getTotalElements()).isEqualTo(0);
+        verify(usuarioRepository).findAll(pageable);
     }
 
     @Test
@@ -183,10 +261,55 @@ class UsuarioServiceImplTest {
     }
 
     @Test
+    @DisplayName("Deve criar usuário com múltiplas permissões")
+    void criarUsuario_comMultiplasPermissoes_sucesso() {
+        UUID permissao2Id = UUID.randomUUID();
+        List<PermissaoDTO> permissaoDTOS = Arrays.asList(
+                new PermissaoDTO(PERMISSAO_ID, "ROLE_ADMIN"),
+                new PermissaoDTO(permissao2Id, "ROLE_USER")
+        );
+
+        UsuarioDTO usuarioDTO = new UsuarioDTO();
+        usuarioDTO.setUsuario("novo");
+        usuarioDTO.setSenha("senha123");
+        usuarioDTO.setUuidVoluntario(VOLUNTARIO_ID);
+        usuarioDTO.setPermissaoDTOList(permissaoDTOS);
+
+        Voluntario voluntario = new Voluntario();
+        voluntario.setUuid(VOLUNTARIO_ID);
+
+        Permissao permissao1 = new Permissao(PERMISSAO_ID, "ROLE_ADMIN");
+        Permissao permissao2 = new Permissao(permissao2Id, "ROLE_USER");
+
+        Usuario usuarioEntity = new Usuario();
+        usuarioEntity.setUsuario("novo");
+
+        UsuarioDTO usuarioDTOSalvo = new UsuarioDTO();
+        usuarioDTOSalvo.setUsuario("novo");
+
+        when(voluntarioRepository.findById(VOLUNTARIO_ID)).thenReturn(Optional.of(voluntario));
+        when(permissaoRepository.findById(PERMISSAO_ID)).thenReturn(Optional.of(permissao1));
+        when(permissaoRepository.findById(permissao2Id)).thenReturn(Optional.of(permissao2));
+        when(usuarioMapper.dtoParaEntity(usuarioDTO)).thenReturn(usuarioEntity);
+        when(passwordEncoder.encode("senha123")).thenReturn("senhaCriptografada");
+        when(usuarioRepository.save(usuarioEntity)).thenReturn(usuarioEntity);
+        when(usuarioMapper.entityParaDto(usuarioEntity)).thenReturn(usuarioDTOSalvo);
+
+        UsuarioDTO resultado = usuarioService.criar(usuarioDTO);
+
+        assertThat(resultado).isEqualTo(usuarioDTOSalvo);
+        verify(permissaoRepository).findById(PERMISSAO_ID);
+        verify(permissaoRepository).findById(permissao2Id);
+        assertThat(usuarioEntity.getPermissoes()).hasSize(2);
+        assertThat(usuarioEntity.getPermissoes()).containsExactlyInAnyOrder(permissao1, permissao2);
+    }
+
+    @Test
     @DisplayName("Deve lançar UsuarioException ao tentar criar usuário com voluntário inexistente")
     void criarUsuario_voluntarioNaoEncontrado() {
         UsuarioDTO usuarioDTO = new UsuarioDTO();
         usuarioDTO.setUuidVoluntario(VOLUNTARIO_ID);
+        usuarioDTO.setPermissaoDTOList(Collections.emptyList());
 
         when(voluntarioRepository.findById(VOLUNTARIO_ID)).thenReturn(Optional.empty());
 
@@ -195,6 +318,7 @@ class UsuarioServiceImplTest {
                 .hasMessageContaining("Voluntário não encontrado com ID: " + VOLUNTARIO_ID);
 
         verify(voluntarioRepository).findById(VOLUNTARIO_ID);
+        verify(permissaoRepository, never()).findById(any());
     }
 
     @Test
@@ -255,6 +379,8 @@ class UsuarioServiceImplTest {
                 .hasMessageContaining("Usuário não encontrado com ID: " + USUARIO_ID);
 
         verify(usuarioRepository).findById(USUARIO_ID);
+        verify(passwordEncoder, never()).encode(any());
+        verify(usuarioRepository, never()).save(any());
     }
 
     @Test
@@ -281,5 +407,6 @@ class UsuarioServiceImplTest {
                 .hasMessageContaining("Usuário não encontrado com ID: " + USUARIO_ID);
 
         verify(usuarioRepository).findById(USUARIO_ID);
+        verify(usuarioRepository, never()).delete(any());
     }
 }

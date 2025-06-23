@@ -11,6 +11,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,6 +40,9 @@ class VoluntarioServiceImplTest {
     @Mock
     private FormularioVoluntarioRepository formularioVoluntarioRepository;
 
+    @Mock
+    private UsuarioRepository usuarioRepository;
+
     @InjectMocks
     private VoluntarioServiceImpl voluntarioService;
 
@@ -45,6 +52,7 @@ class VoluntarioServiceImplTest {
     private FormularioVoluntarioDTO formularioDTO;
     private Voluntario voluntario;
     private UUID voluntarioId;
+    private Usuario usuario;
 
     @BeforeEach
     void setUp() {
@@ -96,7 +104,7 @@ class VoluntarioServiceImplTest {
                 .comoConheceu("Internet")
                 .motivoVoluntariado("Ajudar pessoas")
                 .cienteTrabalhoVoluntario(true)
-                .dedicacaoVoluntariado("10 horas semanais")
+                .dedicacaoVoluntariado(true)
                 .disponibilidadeSemana("Fins de semana")
                 .compromissoDivulgar(true)
                 .compromissoAcao(true)
@@ -115,6 +123,9 @@ class VoluntarioServiceImplTest {
         voluntario.setDataNascimento(LocalDate.of(1990, 1, 1));
         voluntario.setEndereco(endereco);
         voluntario.setAtivo(true);
+
+        usuario = new Usuario();
+        usuario.setAtivo(true);
     }
 
     @Nested
@@ -258,6 +269,7 @@ class VoluntarioServiceImplTest {
             VoluntarioResponseDTO resultado = voluntarioService.buscarPorId(voluntarioId);
 
             assertThat(resultado).isNotNull();
+
             verify(voluntarioRepository).findById(voluntarioId);
             verify(emailRepository).findByVoluntario(voluntario);
             verify(telefoneRepository).findByVoluntario(voluntario);
@@ -294,51 +306,82 @@ class VoluntarioServiceImplTest {
     class BuscarTodosVoluntarios {
 
         @Test
-        @DisplayName("Deve buscar todos voluntários com sucesso")
-        void deveBuscarTodosVoluntariosComSucesso() {
-            List<Voluntario> voluntarios = Arrays.asList(voluntario, new Voluntario());
-            when(voluntarioRepository.findAll()).thenReturn(voluntarios);
+        @DisplayName("Deve buscar todos voluntários com paginação e filtro ativo")
+        void deveBuscarTodosVoluntariosComPaginacaoEFiltroAtivo() {
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<Voluntario> page = new PageImpl<>(Collections.singletonList(voluntario), pageable, 1);
 
-            when(emailRepository.findByVoluntario(any(Voluntario.class)))
-                    .thenReturn(new ArrayList<>());
-            when(telefoneRepository.findByVoluntario(any(Voluntario.class)))
-                    .thenReturn(new ArrayList<>());
-            when(formularioVoluntarioRepository.findByVoluntario(any(Voluntario.class)))
-                    .thenReturn(Optional.of(new FormularioVoluntario()));
+            when(voluntarioRepository.findByAtivo(true, pageable)).thenReturn(page);
+            when(emailRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
+            when(telefoneRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
+            when(formularioVoluntarioRepository.findByVoluntario(any(Voluntario.class))) .thenReturn(Optional.empty()); when(usuarioRepository.findByVoluntario(any(Voluntario.class))).thenReturn(usuario);
 
-            List<VoluntarioResponseDTO> resultado = voluntarioService.buscarTodos();
+            Page<VoluntarioResponseDTO> resultado = voluntarioService.buscarTodos(true, pageable);
 
-            assertThat(resultado).hasSize(2);
-            verify(voluntarioRepository).findAll();
+            assertThat(resultado).isNotNull();
+            assertThat(resultado.getContent()).hasSize(1);
+            assertThat(resultado.getContent().get(0).getUsuarioDTO()).isNotNull();
+            verify(voluntarioRepository).findByAtivo(true, pageable);
+            verify(voluntarioRepository, never()).findAll(pageable);
         }
 
         @Test
-        @DisplayName("Deve retornar lista vazia quando não há voluntários")
-        void deveRetornarListaVaziaQuandoNaoHaVoluntarios() {
-            when(voluntarioRepository.findAll()).thenReturn(new ArrayList<>());
+        @DisplayName("Deve buscar todos voluntários com paginação sem filtro")
+        void deveBuscarTodosVoluntariosComPaginacaoSemFiltro() {
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<Voluntario> page = new PageImpl<>(Collections.singletonList(voluntario), pageable, 1);
 
-            List<VoluntarioResponseDTO> resultado = voluntarioService.buscarTodos();
+            when(voluntarioRepository.findAll(pageable)).thenReturn(page);
+            when(emailRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
+            when(telefoneRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
+            when(formularioVoluntarioRepository.findByVoluntario(any(Voluntario.class)))
+                    .thenReturn(Optional.empty());
+            when(usuarioRepository.findByVoluntario(any(Voluntario.class))).thenReturn(usuario);
 
-            assertThat(resultado).isEmpty();
+            Page<VoluntarioResponseDTO> resultado = voluntarioService.buscarTodos(null, pageable);
+
+            assertThat(resultado).isNotNull();
+            assertThat(resultado.getContent()).hasSize(1);
+            verify(voluntarioRepository).findAll(pageable);
+            verify(voluntarioRepository, never()).findByAtivo(anyBoolean(), any(Pageable.class));
         }
 
         @Test
         @DisplayName("Deve buscar voluntários mesmo sem formulário")
         void deveBuscarVoluntariosMesmoSemFormulario() {
-            List<Voluntario> voluntarios = Arrays.asList(voluntario);
-            when(voluntarioRepository.findAll()).thenReturn(voluntarios);
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<Voluntario> page = new PageImpl<>(Collections.singletonList(voluntario), pageable, 1);
 
-            when(emailRepository.findByVoluntario(any(Voluntario.class)))
-                    .thenReturn(new ArrayList<>());
-            when(telefoneRepository.findByVoluntario(any(Voluntario.class)))
-                    .thenReturn(new ArrayList<>());
+            when(voluntarioRepository.findAll(pageable)).thenReturn(page);
+            when(emailRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
+            when(telefoneRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
             when(formularioVoluntarioRepository.findByVoluntario(any(Voluntario.class)))
                     .thenReturn(Optional.empty());
+            when(usuarioRepository.findByVoluntario(any(Voluntario.class))).thenReturn(usuario);
 
-            List<VoluntarioResponseDTO> resultado = voluntarioService.buscarTodos();
+            Page<VoluntarioResponseDTO> resultado = voluntarioService.buscarTodos(null, pageable);
 
-            assertThat(resultado).hasSize(1);
-            assertThat(resultado.get(0).getFormularioDTO()).isNull();
+            assertThat(resultado).isNotNull();
+            assertThat(resultado.getContent().get(0).getFormularioDTO()).isNull();
+        }
+
+        @Test
+        @DisplayName("Deve buscar voluntários mesmo sem usuário associado")
+        void deveBuscarVoluntariosMesmoSemUsuarioAssociado() {
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<Voluntario> page = new PageImpl<>(Collections.singletonList(voluntario), pageable, 1);
+
+            when(voluntarioRepository.findAll(pageable)).thenReturn(page);
+            when(emailRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
+            when(telefoneRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
+            when(formularioVoluntarioRepository.findByVoluntario(any(Voluntario.class)))
+                    .thenReturn(Optional.empty());
+            when(usuarioRepository.findByVoluntario(any(Voluntario.class))).thenReturn(null);
+
+            Page<VoluntarioResponseDTO> resultado = voluntarioService.buscarTodos(null, pageable);
+
+            assertThat(resultado).isNotNull();
+            assertThat(resultado.getContent().get(0).getUsuarioDTO()).isNull();
         }
     }
 }
