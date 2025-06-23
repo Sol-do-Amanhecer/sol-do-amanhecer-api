@@ -29,6 +29,7 @@ public class VoluntarioResponseDTO {
     @NotNull
     private Boolean ativo;
 
+    private UsuarioStatusIdDTO usuarioDTO;
     private List<EmailDTO> emailDTOList;
     private List<TelefoneDTO> telefoneDTOList;
     private FormularioVoluntarioDTO formularioDTO;

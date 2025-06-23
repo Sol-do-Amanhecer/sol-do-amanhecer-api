@@ -1,6 +1,7 @@
 package br.com.sol_do_amanhecer.repository;
 
 import br.com.sol_do_amanhecer.model.entity.Usuario;
+import br.com.sol_do_amanhecer.model.entity.Voluntario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
     Usuario findByUsuario(@Param("usuario") String usuario);
 
     Page<Usuario> findByAtivo(Boolean ativo, Pageable pageable);
+
+    Usuario findByVoluntario(Voluntario voluntario);
 }

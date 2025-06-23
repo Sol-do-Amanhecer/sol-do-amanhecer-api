@@ -3,10 +3,7 @@ package br.com.sol_do_amanhecer.service.impl;
 import br.com.sol_do_amanhecer.model.dto.*;
 import br.com.sol_do_amanhecer.model.entity.*;
 import br.com.sol_do_amanhecer.model.mapper.*;
-import br.com.sol_do_amanhecer.repository.EmailRepository;
-import br.com.sol_do_amanhecer.repository.FormularioVoluntarioRepository;
-import br.com.sol_do_amanhecer.repository.TelefoneRepository;
-import br.com.sol_do_amanhecer.repository.VoluntarioRepository;
+import br.com.sol_do_amanhecer.repository.*;
 import br.com.sol_do_amanhecer.service.VoluntarioService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,12 +26,14 @@ public class VoluntarioServiceImpl implements VoluntarioService {
     private final EmailRepository emailRepository;
     private final TelefoneRepository telefoneRepository;
     private final FormularioVoluntarioRepository formularioVoluntarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
     private final VoluntarioMapper voluntarioMapper = VoluntarioMapper.INSTANCE;
     private final EmailMapper emailMapper = EmailMapper.INSTANCE;
     private final EnderecoMapper enderecoMapper = EnderecoMapper.INSTANCE;
     private final TelefoneMapper telefoneMapper = TelefoneMapper.INSTANCE;
     private final FormularioVoluntarioMapper formularioMapper = FormularioVoluntarioMapper.INSTANCE;
+    private final UsuarioMapper usuarioMapper = UsuarioMapper.INSTANCE;
 
     @Override
     @Transactional
@@ -138,9 +137,14 @@ public class VoluntarioServiceImpl implements VoluntarioService {
         return voluntarios.map(voluntario -> {
             VoluntarioResponseDTO dto = voluntarioMapper.entityParaResponseDto(voluntario);
 
+            Usuario usuario = usuarioRepository.findByVoluntario(voluntario);
+
+            UsuarioStatusIdDTO usuarioDto = usuarioMapper.entityParaDtoStatus(usuario);
+
             List<Email> emails = emailRepository.findByVoluntario(voluntario);
             List<Telefone> telefones = telefoneRepository.findByVoluntario(voluntario);
 
+            dto.setUsuarioDTO(usuarioDto);
             dto.setEmailDTOList(emails.stream().map(emailMapper::entityParaDto).collect(Collectors.toList()));
             dto.setTelefoneDTOList(telefones.stream().map(telefoneMapper::entityParaDto).collect(Collectors.toList()));
 
