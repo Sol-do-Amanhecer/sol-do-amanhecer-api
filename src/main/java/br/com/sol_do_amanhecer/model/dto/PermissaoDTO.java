@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -16,4 +17,12 @@ public class PermissaoDTO {
     @NotBlank
     @Max(100)
     private String descricao;
+
+    private LocalDateTime criadoEm;
+
+    private LocalDateTime atualizadoEm;
+
+    public PermissaoDTO(UUID uuid, String descricao) {
+        this.descricao = descricao;
+    }
 }

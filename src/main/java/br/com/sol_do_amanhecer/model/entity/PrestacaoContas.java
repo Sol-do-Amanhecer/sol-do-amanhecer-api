@@ -2,9 +2,12 @@ package br.com.sol_do_amanhecer.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -37,4 +40,12 @@ public class PrestacaoContas implements Serializable {
 
     @Column(name = "nota_fiscal")
     private String notaFiscal;
+
+    @CreationTimestamp
+    @Column(name = "criado_em", nullable = false, updatable = false)
+    private LocalDateTime criadoEm;
+
+    @UpdateTimestamp
+    @Column(name = "atualizado_em", nullable = false)
+    private LocalDateTime atualizadoEm;
 }

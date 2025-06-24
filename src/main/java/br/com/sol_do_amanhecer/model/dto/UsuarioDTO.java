@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,4 +38,8 @@ public class UsuarioDTO {
     private List<PermissaoDTO> permissaoDTOList;
     @NotBlank
     private UUID uuidVoluntario;
+
+    private LocalDateTime criadoEm;
+
+    private LocalDateTime atualizadoEm;
 }

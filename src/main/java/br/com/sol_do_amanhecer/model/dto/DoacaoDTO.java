@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -28,6 +29,10 @@ public class DoacaoDTO {
 
     @NotNull
     private Double valor;
+
+    private LocalDateTime criadoEm;
+
+    private LocalDateTime atualizadoEm;
 
     private String comprovante;
 }

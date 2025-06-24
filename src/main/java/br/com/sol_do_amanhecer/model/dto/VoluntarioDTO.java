@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -28,4 +29,8 @@ public class VoluntarioDTO {
 
     @NotNull
     private Boolean ativo;
+
+    private LocalDateTime criadoEm;
+
+    private LocalDateTime atualizadoEm;
 }

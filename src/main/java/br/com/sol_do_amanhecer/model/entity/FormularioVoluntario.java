@@ -2,6 +2,8 @@ package br.com.sol_do_amanhecer.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -53,4 +55,12 @@ public class FormularioVoluntario implements Serializable {
 
     @Column(name = "data_resposta", nullable = false)
     private LocalDateTime dataResposta;
+
+    @CreationTimestamp
+    @Column(name = "criado_em", nullable = false, updatable = false)
+    private LocalDateTime criadoEm;
+
+    @UpdateTimestamp
+    @Column(name = "atualizado_em", nullable = false)
+    private LocalDateTime atualizadoEm;
 }

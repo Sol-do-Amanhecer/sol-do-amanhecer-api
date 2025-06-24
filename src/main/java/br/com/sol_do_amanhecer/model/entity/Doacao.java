@@ -3,9 +3,12 @@ package br.com.sol_do_amanhecer.model.entity;
 import br.com.sol_do_amanhecer.shared.enums.EMeioDoacao;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -30,6 +33,14 @@ public class Doacao implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "meio_doacao", nullable = false)
     private EMeioDoacao meioDoacao;
+
+    @CreationTimestamp
+    @Column(name = "criado_em", nullable = false, updatable = false)
+    private LocalDateTime criadoEm;
+
+    @UpdateTimestamp
+    @Column(name = "atualizado_em", nullable = false)
+    private LocalDateTime atualizadoEm;
 
     @Column(nullable = false)
     private Double valor;
