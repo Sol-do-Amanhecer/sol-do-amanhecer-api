@@ -18,5 +18,5 @@ public interface DoacaoService {
 
     DoacaoDTO buscarPorId(UUID id);
 
-    Page<DoacaoDTO> buscarTodas(LocalDate dataInicio, LocalDate dataFim, EMeioDoacao meioDoacao, Pageable pageable);
+    Page<DoacaoDTO> buscarTodas(Integer ano, Integer mes, EMeioDoacao meioDoacao, Pageable pageable);
 }

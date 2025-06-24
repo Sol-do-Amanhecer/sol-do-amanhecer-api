@@ -20,11 +20,16 @@ public interface DoacaoRepository extends JpaRepository<Doacao, UUID> {
 
     Page<Doacao> findAll(Pageable pageable);
 
-    Page<Doacao> findByMeioDoacaoAndDataDoacaoBetween(EMeioDoacao meioDoacao, LocalDate dataInicio, LocalDate dataFim, Pageable pageable);
-
     Page<Doacao> findByMeioDoacao(EMeioDoacao meioDoacao, Pageable pageable);
 
-    Page<Doacao> findByDataDoacaoBetween(LocalDate dataInicio, LocalDate dataFim, Pageable pageable);
+    @Query("SELECT d FROM Doacao d WHERE YEAR(d.dataDoacao) = :ano AND MONTH(d.dataDoacao) = :mes")
+    Page<Doacao> findByAnoAndMes(@Param("ano") Integer ano, @Param("mes") Integer mes, Pageable pageable);
+
+    @Query("SELECT d FROM Doacao d WHERE d.meioDoacao = :meioDoacao AND YEAR(d.dataDoacao) = :ano AND MONTH(d.dataDoacao) = :mes")
+    Page<Doacao> findByMeioDoacaoAndAnoAndMes(@Param("meioDoacao") EMeioDoacao meioDoacao,
+                                              @Param("ano") Integer ano,
+                                              @Param("mes") Integer mes,
+                                              Pageable pageable);
 
     @Query("SELECT COUNT(p) FROM PrestacaoContas p WHERE p.dataTransacao BETWEEN :inicio AND :fim")
     Long findCountByPeriodo(@Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
