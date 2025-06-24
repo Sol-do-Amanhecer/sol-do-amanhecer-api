@@ -92,14 +92,16 @@ public class VoluntarioServiceImpl implements VoluntarioService {
     @Override
     @Transactional
     public void remover(UUID id) {
-        LOGGER.info("Removendo voluntário com ID: {}", id);
+        LOGGER.info("Desativando voluntário com ID: {}", id);
 
-        if (!voluntarioRepository.existsById(id)) {
-            throw new RuntimeException("Voluntário não encontrado");
-        }
+        Voluntario voluntario = voluntarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Voluntário não encontrado com ID: " + id));
 
-        voluntarioRepository.deleteById(id);
+        voluntario.setAtivo(false);
+
+        voluntarioRepository.save(voluntario);
     }
+
 
     @Override
     public VoluntarioResponseDTO buscarPorId(UUID id) {

@@ -15,5 +15,7 @@ public interface UsuarioService {
 
     void atualizar(UUID id, UsuarioDTO usuarioDTO);
 
+    void trocarSenha(UUID id, String novaSenha);
+
     void remover(UUID id);
 }
