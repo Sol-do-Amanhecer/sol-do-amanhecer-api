@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -22,4 +23,8 @@ public class EmailDTO {
     @Email
     @Size(max = 100)
     private String email;
+
+    private LocalDateTime criadoEm;
+
+    private LocalDateTime atualizadoEm;
 }

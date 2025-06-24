@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -25,4 +26,8 @@ public class TelefoneDTO {
     @NotBlank
     @Size(min = 9, max = 9)
     private String telefone;
+
+    private LocalDateTime criadoEm;
+
+    private LocalDateTime atualizadoEm;
 }

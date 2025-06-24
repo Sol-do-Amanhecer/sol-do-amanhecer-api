@@ -47,4 +47,8 @@ public class FormularioVoluntarioDTO {
 
     @NotNull
     private LocalDateTime dataResposta;
+
+    private LocalDateTime criadoEm;
+
+    private LocalDateTime atualizadoEm;
 }

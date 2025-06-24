@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,4 +34,8 @@ public class VoluntarioResponseDTO {
     private List<EmailDTO> emailDTOList;
     private List<TelefoneDTO> telefoneDTOList;
     private FormularioVoluntarioDTO formularioDTO;
+
+    private LocalDateTime criadoEm;
+
+    private LocalDateTime atualizadoEm;
 }
