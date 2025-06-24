@@ -6,6 +6,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
@@ -27,12 +31,14 @@ public class VoluntarioControllerTest {
     private VoluntarioRequestDTO voluntarioRequestDTO;
     private VoluntarioResponseDTO voluntarioResponseDTO;
     private UUID uuid;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
         uuid = UUID.randomUUID();
+        pageable = PageRequest.of(0, 10);
 
         EnderecoDTO enderecoDTO = EnderecoDTO.builder()
                 .logradouro("Rua Teste")
@@ -68,7 +74,7 @@ public class VoluntarioControllerTest {
                 .comoConheceu("Internet")
                 .motivoVoluntariado("Ajudar")
                 .cienteTrabalhoVoluntario(true)
-                .dedicacaoVoluntariado("Semanal")
+                .dedicacaoVoluntariado(true)
                 .disponibilidadeSemana("Todos os dias")
                 .compromissoDivulgar(true)
                 .compromissoAcao(true)
@@ -123,17 +129,35 @@ public class VoluntarioControllerTest {
     }
 
     @Test
-    @DisplayName("Deve retornar a lista de todos os voluntários")
-    void buscarTodosComSucesso() {
-        when(voluntarioService.buscarTodos()).thenReturn(List.of(voluntarioResponseDTO));
+    @DisplayName("Deve retornar a lista paginada de voluntários com filtro ativo")
+    void buscarTodosComFiltroAtivo() {
+        Page<VoluntarioResponseDTO> page = new PageImpl<>(List.of(voluntarioResponseDTO), pageable, 1);
+        when(voluntarioService.buscarTodos(true, pageable)).thenReturn(page);
 
-        ResponseEntity<List<VoluntarioResponseDTO>> response = voluntarioController.buscarTodos();
+        ResponseEntity<Page<VoluntarioResponseDTO>> response =
+                voluntarioController.buscarTodos(0, 10, true);
 
         assertNotNull(response);
         assertEquals(200, response.getStatusCode().value());
-        assertEquals(1, Objects.requireNonNull(response.getBody()).size());
-        assertEquals(voluntarioResponseDTO, response.getBody().get(0));
-        verify(voluntarioService).buscarTodos();
+        assertEquals(1, Objects.requireNonNull(response.getBody()).getTotalElements());
+        assertEquals(voluntarioResponseDTO, response.getBody().getContent().get(0));
+        verify(voluntarioService).buscarTodos(true, pageable);
+    }
+
+    @Test
+    @DisplayName("Deve retornar a lista paginada de todos os voluntários sem filtro")
+    void buscarTodosSemFiltro() {
+        Page<VoluntarioResponseDTO> page = new PageImpl<>(List.of(voluntarioResponseDTO), pageable, 1);
+        when(voluntarioService.buscarTodos(null, pageable)).thenReturn(page);
+
+        ResponseEntity<Page<VoluntarioResponseDTO>> response =
+                voluntarioController.buscarTodos(0, 10, null);
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(1, Objects.requireNonNull(response.getBody()).getTotalElements());
+        assertEquals(voluntarioResponseDTO, response.getBody().getContent().get(0));
+        verify(voluntarioService).buscarTodos(null, pageable);
     }
 
     @Test

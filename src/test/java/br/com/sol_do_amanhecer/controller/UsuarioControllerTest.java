@@ -6,12 +6,16 @@ import br.com.sol_do_amanhecer.service.UsuarioService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +23,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 @DisplayName("Testes de UsuarioController")
 public class UsuarioControllerTest {
 
@@ -27,10 +32,6 @@ public class UsuarioControllerTest {
 
     @InjectMocks
     private UsuarioController usuarioController;
-
-    public UsuarioControllerTest() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     private UsuarioDTO criaUsuarioDTO() {
         return UsuarioDTO.builder()
@@ -69,17 +70,58 @@ public class UsuarioControllerTest {
     class BuscarTodos {
 
         @Test
-        @DisplayName("Deve retornar lista de usuários")
-        void buscarTodos_Sucesso() {
+        @DisplayName("Deve retornar lista paginada de usuários sem filtro")
+        void buscarTodos_SemFiltro() {
+            Pageable pageable = PageRequest.of(0, 10);
             UsuarioDTO dto = criaUsuarioDTO();
-            when(usuarioService.buscarTodos()).thenReturn(Arrays.asList(dto));
+            Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, 1);
 
-            ResponseEntity<List<UsuarioDTO>> response = usuarioController.buscarTodos();
+            when(usuarioService.buscarTodos(null, pageable)).thenReturn(page);
+
+            ResponseEntity<Page<UsuarioDTO>> response = usuarioController.buscarTodos(0, 10, null);
 
             assertEquals(200, response.getStatusCode().value());
             assertNotNull(response.getBody());
-            assertEquals(1, response.getBody().size());
-            verify(usuarioService, times(1)).buscarTodos();
+            assertEquals(1, response.getBody().getTotalElements());
+            assertEquals(dto, response.getBody().getContent().get(0));
+            verify(usuarioService, times(1)).buscarTodos(null, pageable);
+        }
+
+        @Test
+        @DisplayName("Deve retornar lista paginada de usuários ativos")
+        void buscarTodos_ComFiltroAtivo() {
+            Pageable pageable = PageRequest.of(0, 10);
+            UsuarioDTO dto = criaUsuarioDTO();
+            Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, 1);
+
+            when(usuarioService.buscarTodos(true, pageable)).thenReturn(page);
+
+            ResponseEntity<Page<UsuarioDTO>> response = usuarioController.buscarTodos(0, 10, true);
+
+            assertEquals(200, response.getStatusCode().value());
+            assertNotNull(response.getBody());
+            assertEquals(1, response.getBody().getTotalElements());
+            assertEquals(dto, response.getBody().getContent().get(0));
+            verify(usuarioService, times(1)).buscarTodos(true, pageable);
+        }
+
+        @Test
+        @DisplayName("Deve retornar lista paginada de usuários inativos")
+        void buscarTodos_ComFiltroInativo() {
+            Pageable pageable = PageRequest.of(0, 10);
+            UsuarioDTO dto = criaUsuarioDTO();
+            dto.setAtivo(false);
+            Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, 1);
+
+            when(usuarioService.buscarTodos(false, pageable)).thenReturn(page);
+
+            ResponseEntity<Page<UsuarioDTO>> response = usuarioController.buscarTodos(0, 10, false);
+
+            assertEquals(200, response.getStatusCode().value());
+            assertNotNull(response.getBody());
+            assertEquals(1, response.getBody().getTotalElements());
+            assertEquals(dto, response.getBody().getContent().get(0));
+            verify(usuarioService, times(1)).buscarTodos(false, pageable);
         }
     }
 
@@ -106,7 +148,7 @@ public class UsuarioControllerTest {
     class AtualizarUsuario {
 
         @Test
-        @DisplayName("Deve atualizar usuário e retornar OK (sem conteúdo)")
+        @DisplayName("Deve atualizar usuário e retornar OK")
         void atualizar_Sucesso() {
             UUID id = UUID.randomUUID();
             UsuarioDTO input = criaUsuarioDTO();
