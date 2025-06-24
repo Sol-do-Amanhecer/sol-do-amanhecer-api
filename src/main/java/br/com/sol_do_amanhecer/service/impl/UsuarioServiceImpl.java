@@ -37,11 +37,11 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
     private final VoluntarioRepository voluntarioRepository;
     private final PermissaoRepository permissaoRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UsuarioMapper usuarioMapper = UsuarioMapper.INSTANCE;
+    private final UsuarioMapper usuarioMapper;
 
     @Override
     public UserDetails loadUserByUsername(String usuario) throws UsernameNotFoundException {
-        LOGGER.info("Procurando um usuário pelo login " + usuario + "!");
+        LOGGER.info("Procurando um usuário pelo login {}!", usuario);
         UserDetails userDetails = usuarioRepository.findByUsuario(usuario);
         if (userDetails != null) {
             return userDetails;
