@@ -49,6 +49,12 @@ public class ObjetivoMensal {
     @Transient
     private Double percentualProgresso;
 
+    @Transient
+    private Integer quantidadeDoacao;
+
+    @Transient
+    private Integer quantidadePrestacaoConta;
+
     @CreationTimestamp
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;

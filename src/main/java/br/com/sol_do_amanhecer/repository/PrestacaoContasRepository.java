@@ -32,4 +32,7 @@ public interface PrestacaoContasRepository extends JpaRepository<PrestacaoContas
         WHERE YEAR(p.dataTransacao) = :ano
     """)
     Page<PrestacaoContas> findByAno(@Param("ano") Integer ano, Pageable pageable);
+
+    @Query("SELECT COUNT(d) FROM Doacao d WHERE d.dataDoacao BETWEEN :inicio AND :fim")
+    Long findCountByPeriodo(@Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 }
