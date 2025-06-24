@@ -35,6 +35,8 @@ public class ObjetivoMensalDTO {
     private Double arrecadado;
     private Double gasto;
     private Double percentualProgresso;
+    private Integer quantidadeDoacao;
+    private Integer quantidadePrestacaoConta;
 
     private LocalDateTime criadoEm;
 

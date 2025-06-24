@@ -90,7 +90,7 @@ public class ObjetivoMensalServiceImpl implements ObjetivoMensalService {
         }
 
         return objetivos.map(objetivo -> {
-            calcularValoresDinamicos(objetivo); // Calcula os campos dinâmicos como arrecadado, gasto, etc.
+            calcularValoresDinamicos(objetivo);
             return mapper.entityParaDto(objetivo);
         });
     }
@@ -111,8 +111,13 @@ public class ObjetivoMensalServiceImpl implements ObjetivoMensalService {
         Double arrecadado = doacaoRepository.findTotalByPeriodo(inicioDoMes, fimDoMes);
         Double gasto = prestacaoContasRepository.findTotalByPeriodo(inicioDoMes, fimDoMes);
 
+        Long quantidadeDoacoes = doacaoRepository.findCountByPeriodo(inicioDoMes, fimDoMes);
+        Long quantidadePrestacoesContas = prestacaoContasRepository.findCountByPeriodo(inicioDoMes, fimDoMes);
+
         arrecadado = arrecadado != null ? arrecadado : 0.0;
         gasto = gasto != null ? gasto : 0.0;
+        quantidadeDoacoes = quantidadeDoacoes != null ? quantidadeDoacoes : 0L;
+        quantidadePrestacoesContas = quantidadePrestacoesContas != null ? quantidadePrestacoesContas : 0L;
 
         Double percentualProgresso = arrecadado > 0 && objetivo.getObjetivoArrecadacao() > 0
                 ? (arrecadado / objetivo.getObjetivoArrecadacao()) * 100
@@ -121,5 +126,7 @@ public class ObjetivoMensalServiceImpl implements ObjetivoMensalService {
         objetivo.setArrecadado(arrecadado);
         objetivo.setGasto(gasto);
         objetivo.setPercentualProgresso(percentualProgresso);
+        objetivo.setQuantidadeDoacao(quantidadeDoacoes.intValue());
+        objetivo.setQuantidadePrestacaoConta(quantidadePrestacoesContas.intValue());
     }
 }
