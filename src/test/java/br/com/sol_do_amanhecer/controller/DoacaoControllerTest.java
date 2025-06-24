@@ -58,22 +58,24 @@ class DoacaoControllerTest {
     }
 
     @Test
-    @DisplayName("Deve buscar todas as doações paginadas e filtradas")
+    @DisplayName("Deve buscar todas as doações paginadas e filtradas por ano, mês e meio de doação")
     void testBuscarTodas() {
-        int page = 0, size = 10;
-        LocalDate dataInicio = LocalDate.of(2024, 1, 1);
-        LocalDate dataFim = LocalDate.of(2024, 5, 25);
+        int page = 0;
+        int size = 10;
+        Integer ano = 2024;
+        Integer mes = 5;
         EMeioDoacao meio = EMeioDoacao.PIX;
+
         Page<DoacaoDTO> pageResult = new PageImpl<>(List.of(new DoacaoDTO()));
 
-        when(doacaoService.buscarTodas(dataInicio, dataFim, meio, PageRequest.of(page, size)))
+        when(doacaoService.buscarTodas(ano, mes, meio, PageRequest.of(page, size)))
                 .thenReturn(pageResult);
 
-        ResponseEntity<Page<DoacaoDTO>> response = doacaoController.buscarTodas(page, size, dataInicio, dataFim, meio);
+        ResponseEntity<Page<DoacaoDTO>> response = doacaoController.buscarTodas(page, size, ano, mes, meio);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(pageResult, response.getBody());
-        verify(doacaoService, times(1)).buscarTodas(dataInicio, dataFim, meio, PageRequest.of(page, size));
+        verify(doacaoService, times(1)).buscarTodas(ano, mes, meio, PageRequest.of(page, size));
     }
 
     @Test

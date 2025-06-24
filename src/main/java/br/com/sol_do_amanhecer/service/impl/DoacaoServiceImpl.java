@@ -70,17 +70,17 @@ public class DoacaoServiceImpl implements DoacaoService {
     }
 
     @Override
-    public Page<DoacaoDTO> buscarTodas(LocalDate dataInicio, LocalDate dataFim, EMeioDoacao meioDoacao, Pageable pageable) {
-        LOGGER.info("Buscando doações com os filtros: dataInicio={}, dataFim={}, meioDoacao={}", dataInicio, dataFim, meioDoacao);
+    public Page<DoacaoDTO> buscarTodas(Integer ano, Integer mes, EMeioDoacao meioDoacao, Pageable pageable) {
+        LOGGER.info("Buscando doações com os filtros: ano={}, mes={}, meioDoacao={}", ano, mes, meioDoacao);
 
         Page<Doacao> doacoes;
 
-        if (meioDoacao != null && dataInicio != null && dataFim != null) {
-            doacoes = doacaoRepository.findByMeioDoacaoAndDataDoacaoBetween(meioDoacao, dataInicio, dataFim, pageable);
+        if (meioDoacao != null && ano != null && mes != null) {
+            doacoes = doacaoRepository.findByMeioDoacaoAndAnoAndMes(meioDoacao, ano, mes, pageable);
         } else if (meioDoacao != null) {
             doacoes = doacaoRepository.findByMeioDoacao(meioDoacao, pageable);
-        } else if (dataInicio != null && dataFim != null) {
-            doacoes = doacaoRepository.findByDataDoacaoBetween(dataInicio, dataFim, pageable);
+        } else if (ano != null && mes != null) {
+            doacoes = doacaoRepository.findByAnoAndMes(ano, mes, pageable);
         } else {
             doacoes = doacaoRepository.findAll(pageable);
         }

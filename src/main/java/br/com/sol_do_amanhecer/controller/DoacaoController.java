@@ -51,19 +51,20 @@ public class DoacaoController implements Serializable {
     @GetMapping(value = TODAS_DOACOES)
     @Operation(
             summary = "Buscar todas as doações com filtros",
-            description = "Retorna uma lista de doações paginadas, com filtros opcionais por intervalo de data (dataInicio e dataFim) e meio de doação."
+            description = "Retorna uma lista de doações paginadas, com filtros opcionais por ano, mês e meio de doação."
     )
     public ResponseEntity<Page<DoacaoDTO>> buscarTodas(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) LocalDate dataInicio,
-            @RequestParam(required = false) LocalDate dataFim,
+            @RequestParam(required = false) Integer ano,
+            @RequestParam(required = false) Integer mes,
             @RequestParam(required = false) EMeioDoacao meioDoacao) {
 
         LOGGER.debug("Requisição para buscar todas as doações com filtros");
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<DoacaoDTO> doacoes = doacaoService.buscarTodas(dataInicio, dataFim, meioDoacao, pageable);
+
+        Page<DoacaoDTO> doacoes = doacaoService.buscarTodas(ano, mes, meioDoacao, pageable);
 
         return ResponseEntity.ok().body(doacoes);
     }
