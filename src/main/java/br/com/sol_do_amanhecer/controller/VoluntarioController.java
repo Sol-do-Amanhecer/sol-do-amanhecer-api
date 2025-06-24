@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,7 +63,8 @@ public class VoluntarioController implements Serializable {
 
         LOGGER.debug("Requisição para buscar voluntários com paginação");
 
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("criadoEm").ascending());
+
         Page<VoluntarioResponseDTO> voluntarios = voluntarioService.buscarTodos(ativo, pageable);
 
         return ResponseEntity.ok().body(voluntarios);

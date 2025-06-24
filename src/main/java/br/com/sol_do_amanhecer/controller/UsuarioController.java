@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -74,7 +75,8 @@ public class UsuarioController implements Serializable {
 
         LOGGER.debug("Requisição para buscar usuários com paginação");
 
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("criadoEm").ascending());
+
         Page<UsuarioDTO> usuarios = usuarioService.buscarTodos(ativo, pageable);
 
         return ResponseEntity.ok().body(usuarios);
