@@ -24,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -102,22 +103,85 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
     @Override
     @Transactional
     public void atualizar(UUID id, UsuarioDTO userDTO) {
-        LOGGER.info("Atualizando um usuario");
-        Usuario userEntity = this.usuarioRepository
-                .findById(id)
+        LOGGER.info("Atualizando usuário com ID: {}", id);
+
+        Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioException("Usuário não encontrado com ID: " + id));
 
-        userEntity.setUsuario(userDTO.getUsuario());
-        userEntity.setSenha(passwordEncoder.encode(userDTO.getSenha()));
-        usuarioRepository.save(userEntity);
+        usuario.setUsuario(userDTO.getUsuario());
+        usuario.setSenha(passwordEncoder.encode(userDTO.getSenha()));
+        usuario.setAtivo(userDTO.getAtivo());
+
+        if (Boolean.FALSE.equals(userDTO.getAtivo())) {
+            usuario.setContaExpirada(true);
+            usuario.setContaBloqueada(true);
+            usuario.setCredenciaisExpiradas(true);
+        } else {
+            usuario.setContaExpirada(false);
+            usuario.setContaBloqueada(false);
+            usuario.setCredenciaisExpiradas(false);
+        }
+
+        if (userDTO.getUuidVoluntario() != null) {
+            Voluntario voluntario = voluntarioRepository.findById(userDTO.getUuidVoluntario())
+                    .orElseThrow(() -> new UsuarioException("Voluntário não encontrado com ID: " + userDTO.getUuidVoluntario()));
+            usuario.setVoluntario(voluntario);
+        } else {
+            usuario.setVoluntario(null);
+        }
+
+        if (userDTO.getPermissaoDTOList() != null) {
+            List<UUID> novasIds = userDTO.getPermissaoDTOList().stream()
+                    .map(PermissaoDTO::getUuid)
+                    .toList();
+
+            List<Permissao> atuais = usuario.getPermissoes() != null
+                    ? new ArrayList<>(usuario.getPermissoes())
+                    : new ArrayList<>();
+
+            atuais.removeIf(p -> !novasIds.contains(p.getUuid()));
+
+            for (UUID uuidPermissao : novasIds) {
+                boolean jaExiste = atuais.stream().anyMatch(p -> p.getUuid().equals(uuidPermissao));
+                if (!jaExiste) {
+                    Permissao permissao = permissaoRepository.findById(uuidPermissao)
+                            .orElseThrow(() -> new UsuarioException("Permissão não encontrada com ID: " + uuidPermissao));
+                    atuais.add(permissao);
+                }
+            }
+
+            usuario.setPermissoes(atuais);
+        }
+
+        usuarioRepository.save(usuario);
     }
 
     @Override
-    public void remover(UUID id) {
-        LOGGER.info("Removendo um usuario");
-        Usuario userEntity = this.usuarioRepository
-                .findById(id)
+    @Transactional
+    public void trocarSenha(UUID id, String novaSenha) {
+        LOGGER.info("Alterando senha do usuário com ID: {}", id);
+
+        Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioException("Usuário não encontrado com ID: " + id));
-        this.usuarioRepository.delete(userEntity);
+
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuarioRepository.save(usuario);
     }
+
+    @Override
+    @Transactional
+    public void remover(UUID id) {
+        LOGGER.info("Desativando usuário com ID: {}", id);
+
+        Usuario userEntity = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsuarioException("Usuário não encontrado com ID: " + id));
+
+        userEntity.setContaExpirada(true);
+        userEntity.setContaBloqueada(true);
+        userEntity.setCredenciaisExpiradas(true);
+        userEntity.setAtivo(false);
+
+        usuarioRepository.save(userEntity);
+    }
+
 }

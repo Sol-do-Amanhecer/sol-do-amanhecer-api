@@ -13,6 +13,7 @@ public class PathsConstants {
     public static final String TODOS_USUARIOS = USUARIO_BASE + "/";
     public static final String CRIAR_USUARIO = USUARIO_BASE + "/criar";
     public static final String ATUALIZAR_USUARIO = USUARIO_BASE + "/atualizar/{id}";
+    public static final String TROCAR_SENHA_USUARIO = USUARIO_BASE + "/{id}/trocar-senha";
     public static final String APAGAR_USUARIO = "/remover/{id}";
 
     public static final String PERMISSAO_BASE = "/permissao";

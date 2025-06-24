@@ -14,6 +14,7 @@ import java.util.UUID;
 @EqualsAndHashCode
 public class UsuarioDTO {
 
+    private UUID uuid;
     @NotBlank
     @Size(max = 20, min = 2)
     private String usuario;

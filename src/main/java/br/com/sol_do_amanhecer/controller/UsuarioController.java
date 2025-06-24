@@ -115,6 +115,22 @@ public class UsuarioController implements Serializable {
         return ResponseEntity.ok().build();
     }
 
+    @PatchMapping(value = TROCAR_SENHA_USUARIO)
+    @Operation(summary = "Alterar senha do usuário",
+            description = "Atualiza apenas a senha do usuário",
+            tags = {"Usuário"},
+            responses = {
+                    @ApiResponse(description = "Senha alterada com sucesso", responseCode = "200", content = @Content),
+                    @ApiResponse(description = "Usuário não encontrado", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Erro interno", responseCode = "500", content = @Content),
+            })
+    public ResponseEntity<Void> trocarSenha(@PathVariable("id") UUID id, @RequestBody String novaSenha) {
+        LOGGER.debug("Requisição para trocar senha do usuário com ID: {}", id);
+        usuarioService.trocarSenha(id, novaSenha);
+        return ResponseEntity.ok().build();
+    }
+
+
     @DeleteMapping(APAGAR_USUARIO)
     @Operation(summary = "Excluir um usuário",
             description = "Remove um usuário passando o ID como parâmetro",
