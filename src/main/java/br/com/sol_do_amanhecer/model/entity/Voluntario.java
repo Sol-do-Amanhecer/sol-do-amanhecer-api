@@ -34,7 +34,10 @@ public class Voluntario implements Serializable {
     private Endereco endereco;
 
     @Column(nullable = false)
-    private Boolean ativo = true;
+    private Boolean ativo;
+
+    @Column(name = "aprovado")
+    private Boolean aprovado;
 
     @CreationTimestamp
     @Column(name = "criado_em", nullable = false, updatable = false)

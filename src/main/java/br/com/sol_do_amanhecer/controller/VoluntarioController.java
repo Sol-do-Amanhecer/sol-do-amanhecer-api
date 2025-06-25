@@ -1,5 +1,6 @@
 package br.com.sol_do_amanhecer.controller;
 
+import br.com.sol_do_amanhecer.model.dto.VoluntarioAtualizarStatusAprovacaoDTO;
 import br.com.sol_do_amanhecer.model.dto.VoluntarioDTO;
 import br.com.sol_do_amanhecer.model.dto.VoluntarioRequestDTO;
 import br.com.sol_do_amanhecer.model.dto.VoluntarioResponseDTO;
@@ -92,5 +93,18 @@ public class VoluntarioController implements Serializable {
         LOGGER.debug("Requisição para deletar voluntário");
         this.voluntarioService.remover(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping(value = STATUS_APROVACAO_VOLUNTARIO)
+    @Operation(
+            summary = "Atualizar status de aprovação",
+            description = "Atualiza o status de aprovação do voluntário. Aceita ou recusa o voluntário com base no valor enviado."
+    )
+    public ResponseEntity<Void> atualizarStatusAprovacao(
+            @PathVariable(value = "id") UUID id,
+            @RequestBody VoluntarioAtualizarStatusAprovacaoDTO statusDTO) {
+        LOGGER.debug("Requisição PATCH para atualizar status de aprovação do voluntário com ID: {} para {}", id, statusDTO.getAprovado());
+        voluntarioService.atualizarStatusAprovacao(id, statusDTO.getAprovado());
+        return ResponseEntity.ok().build();
     }
 }
