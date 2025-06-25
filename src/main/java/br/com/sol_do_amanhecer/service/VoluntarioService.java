@@ -19,4 +19,6 @@ public interface VoluntarioService {
                    List<TelefoneDTO> telefoneDTOs, FormularioVoluntarioDTO formularioDTO);
 
     void remover(UUID id);
+
+    void atualizarStatusAprovacao(UUID uuid, Boolean aprovado);
 }
