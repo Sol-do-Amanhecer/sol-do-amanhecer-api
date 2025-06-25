@@ -9,7 +9,6 @@ public enum ETipoAcao {
     ANIMAL("Bem-estar Animal"),
     IDOSO("Cuidados com Idosos"),
     COMEMORATIVA("Datas Comemorativas e Eventos"),
-    INCLUSAO("Inclusão Social"),
     AMBIENTE("Meio Ambiente"),
     SAUDE("Saúde e Bem-estar");
 
