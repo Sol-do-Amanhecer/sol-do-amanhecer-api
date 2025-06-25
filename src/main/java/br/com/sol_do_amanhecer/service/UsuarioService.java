@@ -18,4 +18,6 @@ public interface UsuarioService {
     void trocarSenha(UUID id, String novaSenha);
 
     void remover(UUID id);
+
+    void enviarEmailRedefinicaoSenhaPorUsername(String username);
 }

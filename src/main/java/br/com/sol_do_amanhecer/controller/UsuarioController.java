@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.UUID;
 
 import static br.com.sol_do_amanhecer.shared.constant.PathsConstants.*;
@@ -148,5 +147,24 @@ public class UsuarioController implements Serializable {
         LOGGER.debug("Requisição para deletar usuário");
         this.usuarioService.remover(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(RESETAR_SENHA_USUARIO)
+    @Operation(
+            summary = "Solicitar redefinição de senha pelo username",
+            description = "Busca o usuário pelo seu username e envia um e-mail com instruções para redefinição de senha.",
+            tags = {"Usuário"},
+            responses = {
+                    @ApiResponse(description = "E-mail enviado com sucesso", responseCode = "200", content = @Content),
+                    @ApiResponse(description = "Usuário não encontrado", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Erro interno", responseCode = "500", content = @Content)
+            }
+    )
+    public ResponseEntity<String> solicitarResetSenhaPorUsername(@PathVariable("username") String username) {
+        LOGGER.debug("Iniciando solicitação de redefinição de senha para o usuário: {}", username);
+
+        usuarioService.enviarEmailRedefinicaoSenhaPorUsername(username);
+
+        return ResponseEntity.ok("Um e-mail foi enviado com instruções para redefinir sua senha.");
     }
 }
