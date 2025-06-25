@@ -43,6 +43,8 @@ public class VoluntarioServiceImpl implements VoluntarioService {
 
         Voluntario voluntario = voluntarioMapper.dtoParaEntity(voluntarioDTO);
         voluntario.setEndereco(voluntario.getEndereco());
+        voluntario.setAtivo(false);
+        voluntario.setAprovado(false);
 
         Voluntario voluntarioSalvo = voluntarioRepository.save(voluntario);
 
@@ -195,5 +197,24 @@ public class VoluntarioServiceImpl implements VoluntarioService {
         formularioAtual.setDataResposta(formularioDTO.getDataResposta());
 
         formularioVoluntarioRepository.save(formularioAtual);
+    }
+
+    @Override
+    @Transactional
+    public void atualizarStatusAprovacao(UUID id, Boolean aprovado) {
+        LOGGER.info("Atualizando status de aprovação do voluntário com ID: {} para {}", id, aprovado);
+
+        Voluntario voluntario = voluntarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Voluntário não encontrado com ID: " + id));
+
+        voluntario.setAprovado(aprovado);
+
+        if (Boolean.TRUE.equals(aprovado)) {
+            voluntario.setAtivo(true);
+        } else {
+            voluntario.setAtivo(false);
+        }
+
+        voluntarioRepository.save(voluntario);
     }
 }

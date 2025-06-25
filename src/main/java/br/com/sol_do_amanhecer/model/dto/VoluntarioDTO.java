@@ -30,6 +30,8 @@ public class VoluntarioDTO {
     @NotNull
     private Boolean ativo;
 
+    private Boolean aprovado;
+
     private LocalDateTime criadoEm;
 
     private LocalDateTime atualizadoEm;
