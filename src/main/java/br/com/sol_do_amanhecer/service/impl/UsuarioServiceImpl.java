@@ -3,14 +3,17 @@ package br.com.sol_do_amanhecer.service.impl;
 import br.com.sol_do_amanhecer.exception.UsuarioException;
 import br.com.sol_do_amanhecer.model.dto.PermissaoDTO;
 import br.com.sol_do_amanhecer.model.dto.UsuarioDTO;
+import br.com.sol_do_amanhecer.model.entity.Email;
 import br.com.sol_do_amanhecer.model.entity.Permissao;
 import br.com.sol_do_amanhecer.model.entity.Usuario;
 import br.com.sol_do_amanhecer.model.entity.Voluntario;
 import br.com.sol_do_amanhecer.model.mapper.UsuarioMapper;
+import br.com.sol_do_amanhecer.repository.EmailRepository;
 import br.com.sol_do_amanhecer.repository.PermissaoRepository;
 import br.com.sol_do_amanhecer.repository.UsuarioRepository;
 import br.com.sol_do_amanhecer.repository.VoluntarioRepository;
 import br.com.sol_do_amanhecer.service.UsuarioService;
+import br.com.sol_do_amanhecer.util.EmailUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -24,7 +27,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +38,8 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final VoluntarioRepository voluntarioRepository;
     private final PermissaoRepository permissaoRepository;
+    private final EmailRepository emailRepository;
+    private final EmailUtil emailUtil;
     private final PasswordEncoder passwordEncoder;
     private final UsuarioMapper usuarioMapper;
 
@@ -184,4 +188,38 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
         usuarioRepository.save(userEntity);
     }
 
+    @Override
+    @Transactional
+    public void enviarEmailRedefinicaoSenhaPorUsername(String username) {
+        LOGGER.info("Iniciando processo para redefinição de senha para o username: {}", username);
+
+        Usuario usuario = usuarioRepository.findByUsuario(username);
+        if (usuario == null) {
+            throw new UsuarioException("Usuário não encontrado com o username: " + username);
+        }
+
+        Voluntario voluntario = usuario.getVoluntario();
+        if (voluntario == null) {
+            throw new UsuarioException("Voluntário associado ao usuário não encontrado.");
+        }
+
+        Email email = emailRepository.findFirstByVoluntarioUuid(voluntario.getUuid())
+                .orElseThrow(() -> new UsuarioException("Nenhum e-mail encontrado para o voluntário associado ao usuário."));
+
+        String linkRedefinicao = String.format("http://localhost:8080/usuarios/%s/trocar-senha", usuario.getUuid());
+
+        String assunto = "Redefinição de Senha";
+        String mensagem = String.format(
+                "Olá, %s!\n\n" +
+                        "Recebemos uma solicitação para redefinir sua senha. Se você realizou esta solicitação, clique no link abaixo para redefinir sua senha:\n\n" +
+                        "%s\n\n" +
+                        "Caso você não tenha solicitado a redefinição de senha, pode ignorar este e-mail.\n\n" +
+                        "Atenciosamente,\nEquipe Sol do Amanhecer.",
+                usuario.getUsuario(), linkRedefinicao
+        );
+
+        emailUtil.enviarEmail(email.getEmail(), assunto, mensagem);
+
+        LOGGER.info("E-mail de redefinição enviado com sucesso para o endereço: {}", email.getEmail());
+    }
 }

@@ -1,8 +1,20 @@
-# CORS (ajuste conforme necessário em cada ambiente se preferir)
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: prjsoldoamanhecer@gmail.com
+    password: qvlp jybj ijvl epbs
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
+    default-encoding: UTF-8
+
 cors:
   originPatterns: "http://localhost:8080, http://localhost:8081, http://localhost:8083, http://localhost:4200, http://localhost:5173"
 
-# JWT
 security:
   jwt:
     token:
