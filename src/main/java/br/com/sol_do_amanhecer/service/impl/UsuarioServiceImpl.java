@@ -96,6 +96,9 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
 
         Usuario userEntity = usuarioMapper.dtoParaEntity(userDTO);
 
+        userEntity.setContaBloqueada(false);
+        userEntity.setContaExpirada(false);
+        userEntity.setCredenciaisExpiradas(false);
         userEntity.setVoluntario(voluntario);
         userEntity.setPermissoes(permissoes);
 
