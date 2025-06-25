@@ -58,7 +58,7 @@ public class PrestacaoContasController implements Serializable {
 
         LOGGER.debug("Requisição para buscar prestações de contas com paginação");
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("ano").descending().and(Sort.by("mes").descending()));
+        Pageable pageable = PageRequest.of(page, size, Sort.by("dataTransacao").descending());
 
         Page<PrestacaoContasDTO> prestacoes = prestacaoContasService.buscarTodas(mes, ano, pageable);
 
