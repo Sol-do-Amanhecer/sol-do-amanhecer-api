@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -43,7 +44,7 @@ public class Doacao implements Serializable {
     private LocalDateTime atualizadoEm;
 
     @Column(nullable = false)
-    private Double valor;
+    private BigDecimal valor;
 
     @Column
     private String comprovante;

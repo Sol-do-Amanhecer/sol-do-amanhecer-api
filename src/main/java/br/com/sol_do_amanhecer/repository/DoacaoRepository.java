@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ import java.util.UUID;
 public interface DoacaoRepository extends JpaRepository<Doacao, UUID> {
 
     @Query("SELECT SUM(d.valor) FROM Doacao d WHERE d.dataDoacao BETWEEN :inicio AND :fim")
-    Double findTotalByPeriodo(LocalDate inicio, LocalDate fim);
+    BigDecimal findTotalByPeriodo(LocalDate inicio, LocalDate fim);
 
     Page<Doacao> findAll(Pageable pageable);
 

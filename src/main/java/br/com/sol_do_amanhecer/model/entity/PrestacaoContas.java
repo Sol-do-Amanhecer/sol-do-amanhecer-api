@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -33,7 +34,7 @@ public class PrestacaoContas implements Serializable {
     private String destinoGasto;
 
     @Column(nullable = false)
-    private Double valorPago;
+    private BigDecimal valorPago;
 
     @Column(name = "estabelecimento", nullable = false)
     private String estabelecimento;

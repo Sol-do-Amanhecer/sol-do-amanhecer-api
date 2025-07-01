@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -108,20 +109,20 @@ public class ObjetivoMensalServiceImpl implements ObjetivoMensalService {
         LocalDate inicioDoMes = LocalDate.of(objetivo.getAno(), objetivo.getMes().getNumero(), 1);
         LocalDate fimDoMes = inicioDoMes.withDayOfMonth(inicioDoMes.lengthOfMonth());
 
-        Double arrecadado = doacaoRepository.findTotalByPeriodo(inicioDoMes, fimDoMes);
-        Double gasto = prestacaoContasRepository.findTotalByPeriodo(inicioDoMes, fimDoMes);
+        BigDecimal arrecadado = doacaoRepository.findTotalByPeriodo(inicioDoMes, fimDoMes);
+        BigDecimal gasto = prestacaoContasRepository.findTotalByPeriodo(inicioDoMes, fimDoMes);
 
         Long quantidadeDoacoes = doacaoRepository.findCountByPeriodo(inicioDoMes, fimDoMes);
         Long quantidadePrestacoesContas = prestacaoContasRepository.findCountByPeriodo(inicioDoMes, fimDoMes);
 
-        arrecadado = arrecadado != null ? arrecadado : 0.0;
-        gasto = gasto != null ? gasto : 0.0;
+        arrecadado = arrecadado != null ? arrecadado : BigDecimal.ZERO;
+        gasto = gasto != null ? gasto : BigDecimal.ZERO;
         quantidadeDoacoes = quantidadeDoacoes != null ? quantidadeDoacoes : 0L;
         quantidadePrestacoesContas = quantidadePrestacoesContas != null ? quantidadePrestacoesContas : 0L;
 
-        Double percentualProgresso = arrecadado > 0 && objetivo.getObjetivoArrecadacao() > 0
-                ? (arrecadado / objetivo.getObjetivoArrecadacao()) * 100
-                : 0.0;
+        BigDecimal percentualProgresso = arrecadado.compareTo(BigDecimal.ZERO) > 0 && objetivo.getObjetivoArrecadacao().compareTo(BigDecimal.ZERO) > 0
+                ? (arrecadado.divide(objetivo.getObjetivoArrecadacao())).multiply(BigDecimal.valueOf(100))
+                : BigDecimal.ZERO;
 
         objetivo.setArrecadado(arrecadado);
         objetivo.setGasto(gasto);
