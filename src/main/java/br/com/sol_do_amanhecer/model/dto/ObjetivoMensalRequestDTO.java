@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -27,7 +28,7 @@ public class ObjetivoMensalRequestDTO {
     private Integer ano;
 
     @NotNull
-    private Double objetivoArrecadacao;
+    private BigDecimal objetivoArrecadacao;
 
     private LocalDateTime criadoEm;
 

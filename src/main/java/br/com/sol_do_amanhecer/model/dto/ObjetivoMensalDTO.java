@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -30,11 +31,11 @@ public class ObjetivoMensalDTO {
     private Integer ano;
 
     @NotNull
-    private Double objetivoArrecadacao;
+    private BigDecimal objetivoArrecadacao;
 
-    private Double arrecadado;
-    private Double gasto;
-    private Double percentualProgresso;
+    private BigDecimal arrecadado;
+    private BigDecimal gasto;
+    private BigDecimal percentualProgresso;
     private Integer quantidadeDoacao;
     private Integer quantidadePrestacaoConta;
 

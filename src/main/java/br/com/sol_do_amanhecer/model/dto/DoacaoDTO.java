@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -28,7 +29,7 @@ public class DoacaoDTO {
     private EMeioDoacao meioDoacao;
 
     @NotNull
-    private Double valor;
+    private BigDecimal valor;
 
     private LocalDateTime criadoEm;
 

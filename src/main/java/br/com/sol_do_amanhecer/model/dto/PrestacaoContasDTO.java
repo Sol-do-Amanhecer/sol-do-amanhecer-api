@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -27,7 +28,7 @@ public class PrestacaoContasDTO {
     private String destinoGasto;
 
     @NotNull
-    private Double valorPago;
+    private BigDecimal valorPago;
 
     @NotBlank
     private String estabelecimento;

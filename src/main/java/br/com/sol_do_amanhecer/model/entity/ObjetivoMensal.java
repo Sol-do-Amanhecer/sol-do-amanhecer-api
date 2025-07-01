@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -38,16 +39,16 @@ public class ObjetivoMensal {
     private Integer ano;
 
     @Column(nullable = false)
-    private Double objetivoArrecadacao;
+    private BigDecimal objetivoArrecadacao;
 
     @Transient
-    private Double arrecadado;
+    private BigDecimal arrecadado;
 
     @Transient
-    private Double gasto;
+    private BigDecimal gasto;
 
     @Transient
-    private Double percentualProgresso;
+    private BigDecimal percentualProgresso;
 
     @Transient
     private Integer quantidadeDoacao;
