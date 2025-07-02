@@ -209,7 +209,7 @@ public class UsuarioServiceImpl implements UserDetailsService, UsuarioService {
         Email email = emailRepository.findFirstByVoluntarioUuid(voluntario.getUuid())
                 .orElseThrow(() -> new UsuarioException("Nenhum e-mail encontrado para o voluntário associado ao usuário."));
 
-        String linkRedefinicao = String.format("http://localhost:8080/usuarios/%s/trocar-senha", usuario.getUuid());
+        String linkRedefinicao = String.format("https://soldoamanhecer.com.br/trocar-senha/%s", usuario.getUuid());
 
         String assunto = "Redefinição de Senha";
         String mensagem = String.format(

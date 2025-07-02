@@ -34,6 +34,11 @@ public class ObjetivoMensalServiceImpl implements ObjetivoMensalService {
     @Override
     @Transactional
     public ObjetivoMensalDTO criar(ObjetivoMensalRequestDTO requestDTO) {
+        boolean existeObjetivo = objetivoMensalRepository.existsByMesAndAno(requestDTO.getMes(), requestDTO.getAno());
+        if (existeObjetivo) {
+            throw new RuntimeException("Já existe um objetivo cadastrado para o mês e ano informados.");
+        }
+
         ObjetivoMensal objetivoMensal = ObjetivoMensal.builder()
                 .titulo(requestDTO.getTitulo())
                 .descricao(requestDTO.getDescricao())

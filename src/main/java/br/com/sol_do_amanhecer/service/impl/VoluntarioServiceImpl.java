@@ -1,10 +1,12 @@
 package br.com.sol_do_amanhecer.service.impl;
 
+import br.com.sol_do_amanhecer.exception.UsuarioException;
 import br.com.sol_do_amanhecer.model.dto.*;
 import br.com.sol_do_amanhecer.model.entity.*;
 import br.com.sol_do_amanhecer.model.mapper.*;
 import br.com.sol_do_amanhecer.repository.*;
 import br.com.sol_do_amanhecer.service.VoluntarioService;
+import br.com.sol_do_amanhecer.util.EmailUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -27,6 +29,7 @@ public class VoluntarioServiceImpl implements VoluntarioService {
     private final TelefoneRepository telefoneRepository;
     private final FormularioVoluntarioRepository formularioVoluntarioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final EmailUtil emailUtil;
 
     private final VoluntarioMapper voluntarioMapper = VoluntarioMapper.INSTANCE;
     private final EmailMapper emailMapper = EmailMapper.INSTANCE;
@@ -44,7 +47,7 @@ public class VoluntarioServiceImpl implements VoluntarioService {
         Voluntario voluntario = voluntarioMapper.dtoParaEntity(voluntarioDTO);
         voluntario.setEndereco(voluntario.getEndereco());
         voluntario.setAtivo(false);
-        voluntario.setAprovado(false);
+        voluntario.setAprovado(null);
 
         Voluntario voluntarioSalvo = voluntarioRepository.save(voluntario);
 
@@ -63,6 +66,8 @@ public class VoluntarioServiceImpl implements VoluntarioService {
         FormularioVoluntario formularioVoluntario = formularioMapper.dtoParaEntity(formularioDTO);
         formularioVoluntario.setVoluntario(voluntarioSalvo);
         formularioVoluntarioRepository.save(formularioVoluntario);
+
+        enviarEmailStatusVoluntario(voluntarioSalvo);
 
         return voluntarioMapper.entityParaDto(voluntarioSalvo);
     }
@@ -103,7 +108,6 @@ public class VoluntarioServiceImpl implements VoluntarioService {
 
         voluntarioRepository.save(voluntario);
     }
-
 
     @Override
     public VoluntarioResponseDTO buscarPorId(UUID id) {
@@ -216,6 +220,8 @@ public class VoluntarioServiceImpl implements VoluntarioService {
         }
 
         voluntarioRepository.save(voluntario);
+
+        enviarEmailStatusAprovacao(voluntario, aprovado);
     }
 
     @Override
@@ -240,5 +246,62 @@ public class VoluntarioServiceImpl implements VoluntarioService {
 
             return dto;
         });
+    }
+
+    private void enviarEmailStatusVoluntario(Voluntario voluntario) {
+        LOGGER.info("Iniciando envio de e-mail sobre o status do voluntário: {}", voluntario.getUuid());
+
+        Email email = emailRepository.findFirstByVoluntarioUuid(voluntario.getUuid())
+                .orElseThrow(() -> new UsuarioException("Nenhum e-mail encontrado para o voluntário."));
+        String primeiroNome = voluntario.getNomeCompleto().split(" ")[0];
+        String assunto = "Status da Inscrição no Voluntariado";
+        String mensagem = String.format(
+                "Olá, %s!\n\n" +
+                        "Obrigado por se inscrever como voluntário no Sol do Amanhecer. Estamos revisando sua inscrição.\n\n" +
+                        "Fique atento ao seu e-mail para atualizações futuras sobre a sua aprovação ou reprovação!\n\n" +
+                        "Atenciosamente,\nEquipe Sol do Amanhecer.",
+                primeiroNome
+        );
+
+        emailUtil.enviarEmail(email.getEmail(), assunto, mensagem);
+
+        LOGGER.info("E-mail sobre o status do voluntário enviado com sucesso para: {}", email.getEmail());
+    }
+
+    private void enviarEmailStatusAprovacao(Voluntario voluntario, Boolean aprovado) {
+        LOGGER.info("Enviando e-mail sobre status de aprovação para o voluntário: {}", voluntario.getUuid());
+
+        Email email = emailRepository.findFirstByVoluntarioUuid(voluntario.getUuid())
+                .orElseThrow(() -> new RuntimeException("Nenhum e-mail encontrado para o voluntário."));
+
+        String assunto;
+        String mensagem;
+        String primeiroNome = voluntario.getNomeCompleto().split(" ")[0];
+
+        if (Boolean.TRUE.equals(aprovado)) {
+            assunto = "Parabéns, você foi aprovado!";
+            mensagem = String.format(
+                    "Olá, %s!\n\n" +
+                            "Temos boas notícias! Após analisar o seu cadastro, você foi aprovado(a) como voluntário(a) no Sol do Amanhecer.\n\n" +
+                            "Agora, você já está ativo(a) para contribuir com nossas ações! Entraremos em contato com você via WhatsApp.\n\n" +
+                            "Estamos muito felizes por ter você conosco!\n\n" +
+                            "Atenciosamente,\nEquipe Sol do Amanhecer.",
+                    primeiroNome
+            );
+        } else {
+            assunto = "Infelizmente, você não foi aprovado";
+            mensagem = String.format(
+                    "Olá, %s!\n\n" +
+                            "Após analisarmos o seu perfil, infelizmente, constatamos que você não atende aos critérios para se tornar voluntário(a) no Sol do Amanhecer neste momento.\n\n" +
+                            "Queremos agradecer de coração pelo seu interesse em colaborar. Não desista de acompanhar nossas ações, e fique à vontade para se candidatar novamente no futuro!\n\n" +
+                            "Se tiver dúvidas ou precisar de mais informações, entre em contato conosco.\n\n" +
+                            "Atenciosamente,\nEquipe Sol do Amanhecer.",
+                    primeiroNome
+            );
+        }
+
+        emailUtil.enviarEmail(email.getEmail(), assunto, mensagem);
+
+        LOGGER.info("E-mail enviado sobre o status de aprovação para: {}", email.getEmail());
     }
 }
