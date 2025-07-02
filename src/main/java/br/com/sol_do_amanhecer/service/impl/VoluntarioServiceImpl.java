@@ -217,4 +217,28 @@ public class VoluntarioServiceImpl implements VoluntarioService {
 
         voluntarioRepository.save(voluntario);
     }
+
+    @Override
+    public Page<VoluntarioResponseDTO> buscarNovos(Pageable pageable) {
+        LOGGER.info("Buscando todos os novos voluntários com status de aprovação nulo");
+
+        Page<Voluntario> novosVoluntarios = voluntarioRepository.findByAprovadoIsNull(pageable);
+
+        return novosVoluntarios.map(voluntario -> {
+            VoluntarioResponseDTO dto = voluntarioMapper.entityParaResponseDto(voluntario);
+
+            List<Email> emails = emailRepository.findByVoluntario(voluntario);
+            List<Telefone> telefones = telefoneRepository.findByVoluntario(voluntario);
+            FormularioVoluntario formulario = formularioVoluntarioRepository.findByVoluntario(voluntario).orElse(null);
+
+            dto.setEmailDTOList(emails.stream().map(emailMapper::entityParaDto).collect(Collectors.toList()));
+            dto.setTelefoneDTOList(telefones.stream().map(telefoneMapper::entityParaDto).collect(Collectors.toList()));
+
+            if (formulario != null) {
+                dto.setFormularioDTO(formularioMapper.entityParaDto(formulario));
+            }
+
+            return dto;
+        });
+    }
 }
