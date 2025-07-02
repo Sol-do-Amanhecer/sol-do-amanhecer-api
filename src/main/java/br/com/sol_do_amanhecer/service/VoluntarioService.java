@@ -21,4 +21,6 @@ public interface VoluntarioService {
     void remover(UUID id);
 
     void atualizarStatusAprovacao(UUID uuid, Boolean aprovado);
+
+    Page<VoluntarioResponseDTO> buscarNovos(Pageable pageable);
 }

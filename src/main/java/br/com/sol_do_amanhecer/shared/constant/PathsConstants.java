@@ -30,7 +30,8 @@ public class PathsConstants {
     public static final String CRIAR_VOLUNTARIO = VOLUNTARIO_BASE + "/criar";
     public static final String ATUALIZAR_VOLUNTARIO = VOLUNTARIO_BASE + "/atualizar/{id}";
     public static final String APAGAR_VOLUNTARIO = VOLUNTARIO_BASE + "/remover/{id}";
-    public static final String STATUS_APROVACAO_VOLUNTARIO = VOLUNTARIO_BASE + "/voluntarios/{id}/status-aprovacao";
+    public static final String STATUS_APROVACAO_VOLUNTARIO = VOLUNTARIO_BASE + "/{id}/status-aprovacao";
+    public static final String NOVOS_VOLUNTARIO = VOLUNTARIO_BASE + "/voluntarios/novos";
 
     public static final String ACAO_BASE = "/acao";
     public static final String ACAO_POR_ID = ACAO_BASE + "/{id}";

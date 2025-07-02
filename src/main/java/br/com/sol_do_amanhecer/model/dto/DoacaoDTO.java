@@ -35,5 +35,5 @@ public class DoacaoDTO {
 
     private LocalDateTime atualizadoEm;
 
-    private String comprovante;
+    private byte[] comprovante;
 }

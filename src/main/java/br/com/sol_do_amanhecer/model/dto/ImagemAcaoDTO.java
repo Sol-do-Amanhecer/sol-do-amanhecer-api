@@ -15,7 +15,7 @@ public class ImagemAcaoDTO {
     @NotNull
     private UUID uuidAcao;
 
-    @NotNull(message = "A imagem da ação é obrigatória")
+    @NotNull
     private byte[] imagem;
 
     private LocalDateTime criadoEm;

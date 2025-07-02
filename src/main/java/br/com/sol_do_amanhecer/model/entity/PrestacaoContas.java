@@ -49,4 +49,7 @@ public class PrestacaoContas implements Serializable {
     @UpdateTimestamp
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
+
+    @Column(name = "comprovante", columnDefinition = "BLOB")
+    private byte[] comprovante;
 }

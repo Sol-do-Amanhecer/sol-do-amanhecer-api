@@ -46,6 +46,7 @@ public class PrestacaoContasServiceImpl implements PrestacaoContasService {
         prestacaoExistente.setValorPago(prestacaoContasDTO.getValorPago());
         prestacaoExistente.setEstabelecimento(prestacaoContasDTO.getEstabelecimento());
         prestacaoExistente.setNotaFiscal(prestacaoContasDTO.getNotaFiscal());
+        prestacaoExistente.setComprovante(prestacaoContasDTO.getComprovante());
         prestacaoContasRepository.save(prestacaoExistente);
     }
 

@@ -38,4 +38,6 @@ public class PrestacaoContasDTO {
     private LocalDateTime criadoEm;
 
     private LocalDateTime atualizadoEm;
+
+    private byte[] comprovante;
 }

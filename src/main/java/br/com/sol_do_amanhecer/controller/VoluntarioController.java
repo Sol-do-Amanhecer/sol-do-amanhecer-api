@@ -107,4 +107,21 @@ public class VoluntarioController implements Serializable {
         voluntarioService.atualizarStatusAprovacao(id, statusDTO.getAprovado());
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping(value = NOVOS_VOLUNTARIO)
+    @Operation(
+            summary = "Listar novos voluntários",
+            description = "Retorna uma lista paginada de voluntários com status de aprovação nulo"
+    )
+    public ResponseEntity<Page<VoluntarioResponseDTO>> buscarNovosVoluntarios(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        LOGGER.debug("Requisição para buscar novos voluntários");
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("criadoEm").ascending());
+        Page<VoluntarioResponseDTO> novosVoluntarios = voluntarioService.buscarNovos(pageable);
+
+        return ResponseEntity.ok().body(novosVoluntarios);
+    }
 }

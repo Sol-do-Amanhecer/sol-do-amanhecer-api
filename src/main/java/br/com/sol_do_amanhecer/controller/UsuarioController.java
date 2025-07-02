@@ -131,7 +131,6 @@ public class UsuarioController implements Serializable {
         return ResponseEntity.ok().build();
     }
 
-
     @DeleteMapping(APAGAR_USUARIO)
     @Operation(summary = "Excluir um usuário",
             description = "Remove um usuário passando o ID como parâmetro",
