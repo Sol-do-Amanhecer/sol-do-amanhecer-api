@@ -1,5 +1,6 @@
 package br.com.sol_do_amanhecer.controller;
 
+import br.com.sol_do_amanhecer.model.dto.TrocarSenhaDTO;
 import br.com.sol_do_amanhecer.model.dto.UsuarioDTO;
 import br.com.sol_do_amanhecer.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -125,9 +126,9 @@ public class UsuarioController implements Serializable {
                     @ApiResponse(description = "Usuário não encontrado", responseCode = "404", content = @Content),
                     @ApiResponse(description = "Erro interno", responseCode = "500", content = @Content),
             })
-    public ResponseEntity<Void> trocarSenha(@PathVariable("id") UUID id, @RequestBody String novaSenha) {
+    public ResponseEntity<Void> trocarSenha(@PathVariable("id") UUID id, @RequestBody TrocarSenhaDTO dto) {
         LOGGER.debug("Requisição para trocar senha do usuário com ID: {}", id);
-        usuarioService.trocarSenha(id, novaSenha);
+        usuarioService.trocarSenha(id, dto.getSenha());
         return ResponseEntity.ok().build();
     }
 
