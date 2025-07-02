@@ -67,7 +67,7 @@ public class AutenticacaoController implements Serializable {
                     @ApiResponse(description = "Requisição Inválida", responseCode = "400", content = @Content),
                     @ApiResponse(description = "Não Autorizado", responseCode = "401", content = @Content),
             })
-    public ResponseEntity<?> atualizarToken(@PathVariable("username") String username, @RequestHeader("Authorization") String refreshToken) {
+    public ResponseEntity<?> atualizarToken(@PathVariable("usuario") String username, @RequestHeader("Authorization") String refreshToken) {
         LOGGER.debug("Requisição para atualizar token");
 
         if (verificarSeParametrosSaoInvalidosParaAtualizarToken(username, refreshToken)) {
