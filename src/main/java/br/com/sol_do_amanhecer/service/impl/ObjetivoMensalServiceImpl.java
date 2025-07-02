@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -125,8 +126,10 @@ public class ObjetivoMensalServiceImpl implements ObjetivoMensalService {
         quantidadeDoacoes = quantidadeDoacoes != null ? quantidadeDoacoes : 0L;
         quantidadePrestacoesContas = quantidadePrestacoesContas != null ? quantidadePrestacoesContas : 0L;
 
-        BigDecimal percentualProgresso = arrecadado.compareTo(BigDecimal.ZERO) > 0 && objetivo.getObjetivoArrecadacao().compareTo(BigDecimal.ZERO) > 0
-                ? (arrecadado.divide(objetivo.getObjetivoArrecadacao())).multiply(BigDecimal.valueOf(100))
+        BigDecimal percentualProgresso = arrecadado.compareTo(BigDecimal.ZERO) > 0
+                && objetivo.getObjetivoArrecadacao().compareTo(BigDecimal.ZERO) > 0
+                ? arrecadado.divide(objetivo.getObjetivoArrecadacao(), 2, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
                 : BigDecimal.ZERO;
 
         objetivo.setArrecadado(arrecadado);
