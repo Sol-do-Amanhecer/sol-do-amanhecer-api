@@ -1,4 +1,4 @@
-# 🌞 Sol do Amanhecer - API
+# 🌞 Sol do Amanhecer - API 
 
 API desenvolvida em **Java 19** com **Spring Boot** para o sistema web da plataforma **Sol do Amanhecer**. Este backend é responsável por autenticação, controle de usuários e regras de negócio do sistema, suportando diferentes ambientes com foco em segurança, escalabilidade e praticidade no desenvolvimento.
 
