@@ -136,10 +136,10 @@ public class VoluntarioServiceImpl implements VoluntarioService {
 
         if (ativo != null) {
             LOGGER.info("Buscando voluntários filtrados por ativo: {}", ativo);
-            voluntarios = voluntarioRepository.findByAtivo(ativo, pageable);
+            voluntarios = voluntarioRepository.findByAtivoAndAprovadoIsNotNull(ativo, pageable);
         } else {
             LOGGER.info("Buscando todos os voluntários sem filtro");
-            voluntarios = voluntarioRepository.findAll(pageable);
+            voluntarios = voluntarioRepository.findAllByAprovadoIsNotNull(pageable);
         }
 
         return voluntarios.map(voluntario -> {

@@ -11,7 +11,9 @@ import java.util.UUID;
 @Repository
 public interface VoluntarioRepository extends JpaRepository<Voluntario, UUID> {
 
-    Page<Voluntario> findByAtivo(Boolean ativo, Pageable pageable);
+    Page<Voluntario> findByAtivoAndAprovadoIsNotNull(Boolean ativo, Pageable pageable);
 
     Page<Voluntario> findByAprovadoIsNull(Pageable pageable);
+
+    Page<Voluntario> findAllByAprovadoIsNotNull(Pageable pageable);
 }
