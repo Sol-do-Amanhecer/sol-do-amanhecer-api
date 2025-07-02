@@ -13,7 +13,7 @@ spring:
     default-encoding: UTF-8
 
 cors:
-  originPatterns: "http://localhost:8080, http://localhost:5173, http://api-homol.soldoamanhecer.com.br, http://api-prod.soldoamanhecer.com.br, https://api-homol.soldoamanhecer.com.br, https://api-prod.soldoamanhecer.com.br, http://hom.soldoamanhecer.com.br, http://soldoamanhecer.com.br, https://hom.soldoamanhecer.com.br, https://soldoamanhecer.com.br"
+  originPatterns: "http://localhost:8080, http://localhost:5173, http://213.136.68.204:8081, http://213.136.68.204:8083, http://api-homol.soldoamanhecer.com.br, http://api-prod.soldoamanhecer.com.br, https://213.136.68.204:8081, https://213.136.68.204:8083, https://api-homol.soldoamanhecer.com.br, https://api-prod.soldoamanhecer.com.br, http://hom.soldoamanhecer.com.br, http://soldoamanhecer.com.br, https://hom.soldoamanhecer.com.br, https://soldoamanhecer.com.br"
 
 
 security:
