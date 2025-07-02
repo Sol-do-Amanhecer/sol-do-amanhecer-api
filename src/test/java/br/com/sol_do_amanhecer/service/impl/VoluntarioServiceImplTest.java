@@ -311,7 +311,7 @@ class VoluntarioServiceImplTest {
             Pageable pageable = PageRequest.of(0, 10);
             Page<Voluntario> page = new PageImpl<>(Collections.singletonList(voluntario), pageable, 1);
 
-            when(voluntarioRepository.findByAtivo(true, pageable)).thenReturn(page);
+            when(voluntarioRepository.findByAtivoAndAprovadoIsNotNull(true, pageable)).thenReturn(page);
             when(emailRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
             when(telefoneRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
             when(formularioVoluntarioRepository.findByVoluntario(any(Voluntario.class))) .thenReturn(Optional.empty()); when(usuarioRepository.findByVoluntario(any(Voluntario.class))).thenReturn(usuario);
@@ -321,7 +321,7 @@ class VoluntarioServiceImplTest {
             assertThat(resultado).isNotNull();
             assertThat(resultado.getContent()).hasSize(1);
             assertThat(resultado.getContent().get(0).getUsuarioDTO()).isNotNull();
-            verify(voluntarioRepository).findByAtivo(true, pageable);
+            verify(voluntarioRepository).findByAtivoAndAprovadoIsNotNull(true, pageable);
             verify(voluntarioRepository, never()).findAll(pageable);
         }
 
@@ -343,7 +343,7 @@ class VoluntarioServiceImplTest {
             assertThat(resultado).isNotNull();
             assertThat(resultado.getContent()).hasSize(1);
             verify(voluntarioRepository).findAll(pageable);
-            verify(voluntarioRepository, never()).findByAtivo(anyBoolean(), any(Pageable.class));
+            verify(voluntarioRepository, never()).findByAtivoAndAprovadoIsNotNull(anyBoolean(), any(Pageable.class));
         }
 
         @Test
