@@ -50,6 +50,6 @@ public class PrestacaoContas implements Serializable {
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
 
-    @Column(name = "comprovante", columnDefinition = "BLOB")
+    @Column(name = "comprovante", columnDefinition = "BYTEA")
     private byte[] comprovante;
 }
