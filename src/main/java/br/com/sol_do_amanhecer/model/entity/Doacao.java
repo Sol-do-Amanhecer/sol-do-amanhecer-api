@@ -46,6 +46,6 @@ public class Doacao implements Serializable {
     @Column(nullable = false)
     private BigDecimal valor;
 
-    @Column(name = "comprovante", columnDefinition = "BLOB")
+    @Column(name = "comprovante", columnDefinition = "BYTEA")
     private byte[] comprovante;;
 }

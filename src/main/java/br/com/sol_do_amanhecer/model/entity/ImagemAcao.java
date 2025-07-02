@@ -21,7 +21,7 @@ public class ImagemAcao {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID uuid;
 
-    @Column(name = "imagem", nullable = false, columnDefinition = "BLOB")
+    @Column(name = "imagem", nullable = false, columnDefinition = "BYTEA")
     private byte[] imagem;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
