@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 public class AutenticacaoControllerTest {
 
     public static final int HORA_EM_MILISSEGUNDO = 3600000;
+
     @Mock
     private AutenticacaoService autenticacaoService;
 
@@ -70,6 +71,21 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
+    @DisplayName("Deve retornar BAD_REQUEST (400) para usuário nulo")
+    public void testEntrarUsuarioNulo() {
+        LoginDTO loginDTO = new LoginDTO();
+        loginDTO.setUsuario(null);
+        loginDTO.setSenha("senhaValida");
+
+        ResponseEntity<?> response = autenticacaoController.entrar(loginDTO);
+
+        assertNotNull(response, "A resposta não deve ser nula.");
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Requisição inválida! Verifique os parâmetros.", response.getBody());
+        verify(autenticacaoService, never()).entrar(any());
+    }
+
+    @Test
     @DisplayName("Deve retornar BAD_REQUEST (400) para usuário em branco")
     public void testEntrarUsuarioEmBranco() {
         LoginDTO loginDTO = new LoginDTO();
@@ -85,11 +101,56 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
+    @DisplayName("Deve retornar BAD_REQUEST (400) para usuário com apenas espaços em branco")
+    public void testEntrarUsuarioApenasEspacos() {
+        LoginDTO loginDTO = new LoginDTO();
+        loginDTO.setUsuario("   ");
+        loginDTO.setSenha("senhaValida");
+
+        ResponseEntity<?> response = autenticacaoController.entrar(loginDTO);
+
+        assertNotNull(response, "A resposta não deve ser nula.");
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Requisição inválida! Verifique os parâmetros.", response.getBody());
+        verify(autenticacaoService, never()).entrar(any());
+    }
+
+    @Test
+    @DisplayName("Deve retornar BAD_REQUEST (400) para senha nula")
+    public void testEntrarSenhaNula() {
+        LoginDTO loginDTO = new LoginDTO();
+        loginDTO.setUsuario("usuarioValido");
+        loginDTO.setSenha(null);
+
+        ResponseEntity<?> response = autenticacaoController.entrar(loginDTO);
+
+        assertNotNull(response, "A resposta não deve ser nula.");
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Requisição inválida! Verifique os parâmetros.", response.getBody());
+        verify(autenticacaoService, never()).entrar(any());
+    }
+
+    @Test
     @DisplayName("Deve retornar BAD_REQUEST (400) para senha em branco")
     public void testEntrarSenhaEmBranco() {
         LoginDTO loginDTO = new LoginDTO();
         loginDTO.setUsuario("usuarioValido");
         loginDTO.setSenha("");
+
+        ResponseEntity<?> response = autenticacaoController.entrar(loginDTO);
+
+        assertNotNull(response, "A resposta não deve ser nula.");
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Requisição inválida! Verifique os parâmetros.", response.getBody());
+        verify(autenticacaoService, never()).entrar(any());
+    }
+
+    @Test
+    @DisplayName("Deve retornar BAD_REQUEST (400) para senha com apenas espaços em branco")
+    public void testEntrarSenhaApenasEspacos() {
+        LoginDTO loginDTO = new LoginDTO();
+        loginDTO.setUsuario("usuarioValido");
+        loginDTO.setSenha("   ");
 
         ResponseEntity<?> response = autenticacaoController.entrar(loginDTO);
 
@@ -145,38 +206,80 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    @DisplayName("Deve retornar BAD_REQUEST (400) quando username é nulo ou vazio")
-    public void testAtualizarTokenUsernameInvalido() {
+    @DisplayName("Deve retornar BAD_REQUEST (400) quando username é nulo")
+    public void testAtualizarTokenUsernameNulo() {
         String refreshToken = "valid_refresh_token_value";
 
-        ResponseEntity<?> responseNull = autenticacaoController.atualizarToken(null, refreshToken);
-        assertNotNull(responseNull);
-        assertEquals(HttpStatus.BAD_REQUEST, responseNull.getStatusCode());
-        assertEquals("Requisição inválida! Verifique os parâmetros.", responseNull.getBody());
+        ResponseEntity<?> response = autenticacaoController.atualizarToken(null, refreshToken);
 
-        ResponseEntity<?> responseEmpty = autenticacaoController.atualizarToken("", refreshToken);
-        assertNotNull(responseEmpty);
-        assertEquals(HttpStatus.BAD_REQUEST, responseEmpty.getStatusCode());
-        assertEquals("Requisição inválida! Verifique os parâmetros.", responseEmpty.getBody());
-
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Requisição inválida! Verifique os parâmetros.", response.getBody());
         verify(autenticacaoService, never()).refreshToken(any(), any());
     }
 
     @Test
-    @DisplayName("Deve retornar BAD_REQUEST (400) quando refreshToken é nulo ou vazio")
-    public void testAtualizarTokenRefreshTokenInvalido() {
+    @DisplayName("Deve retornar BAD_REQUEST (400) quando username é vazio")
+    public void testAtualizarTokenUsernameVazio() {
+        String refreshToken = "valid_refresh_token_value";
+
+        ResponseEntity<?> response = autenticacaoController.atualizarToken("", refreshToken);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Requisição inválida! Verifique os parâmetros.", response.getBody());
+        verify(autenticacaoService, never()).refreshToken(any(), any());
+    }
+
+    @Test
+    @DisplayName("Deve retornar BAD_REQUEST (400) quando username contém apenas espaços em branco")
+    public void testAtualizarTokenUsernameApenasEspacos() {
+        String refreshToken = "valid_refresh_token_value";
+
+        ResponseEntity<?> response = autenticacaoController.atualizarToken("   ", refreshToken);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Requisição inválida! Verifique os parâmetros.", response.getBody());
+        verify(autenticacaoService, never()).refreshToken(any(), any());
+    }
+
+    @Test
+    @DisplayName("Deve retornar BAD_REQUEST (400) quando refreshToken é nulo")
+    public void testAtualizarTokenRefreshTokenNulo() {
         String username = "usuario";
 
-        ResponseEntity<?> responseNull = autenticacaoController.atualizarToken(username, null);
-        assertNotNull(responseNull);
-        assertEquals(HttpStatus.BAD_REQUEST, responseNull.getStatusCode());
-        assertEquals("Requisição inválida! Verifique os parâmetros.", responseNull.getBody());
+        ResponseEntity<?> response = autenticacaoController.atualizarToken(username, null);
 
-        ResponseEntity<?> responseEmpty = autenticacaoController.atualizarToken(username, "");
-        assertNotNull(responseEmpty);
-        assertEquals(HttpStatus.BAD_REQUEST, responseEmpty.getStatusCode());
-        assertEquals("Requisição inválida! Verifique os parâmetros.", responseEmpty.getBody());
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Requisição inválida! Verifique os parâmetros.", response.getBody());
+        verify(autenticacaoService, never()).refreshToken(any(), any());
+    }
 
+    @Test
+    @DisplayName("Deve retornar BAD_REQUEST (400) quando refreshToken é vazio")
+    public void testAtualizarTokenRefreshTokenVazio() {
+        String username = "usuario";
+
+        ResponseEntity<?> response = autenticacaoController.atualizarToken(username, "");
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Requisição inválida! Verifique os parâmetros.", response.getBody());
+        verify(autenticacaoService, never()).refreshToken(any(), any());
+    }
+
+    @Test
+    @DisplayName("Deve retornar BAD_REQUEST (400) quando refreshToken contém apenas espaços em branco")
+    public void testAtualizarTokenRefreshTokenApenasEspacos() {
+        String username = "usuario";
+
+        ResponseEntity<?> response = autenticacaoController.atualizarToken(username, "   ");
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Requisição inválida! Verifique os parâmetros.", response.getBody());
         verify(autenticacaoService, never()).refreshToken(any(), any());
     }
 

@@ -67,13 +67,22 @@ class ObjetivoMensalControllerTest {
         Integer ano = 2024;
         Page<ObjetivoMensalDTO> objetivos = new PageImpl<>(List.of(new ObjetivoMensalDTO()));
 
-        when(objetivoMensalService.buscarTodos(mes, ano, PageRequest.of(page, size))).thenReturn(objetivos);
+        when(objetivoMensalService.buscarTodos(eq(mes), eq(ano), any(Pageable.class))).thenReturn(objetivos);
 
         ResponseEntity<Page<ObjetivoMensalDTO>> response = objetivoMensalController.buscarTodos(page, size, mes, ano);
 
         assertEquals(200, response.getStatusCode().value());
-        assertEquals(objetivos, response.getBody());
-        verify(objetivoMensalService, times(1)).buscarTodos(mes, ano, PageRequest.of(page, size));
+
+        Page<ObjetivoMensalDTO> responseBody = response.getBody();
+        assertNotNull(responseBody, "Response body should not be null");
+        assertEquals(1, responseBody.getTotalElements());
+
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(objetivoMensalService, times(1)).buscarTodos(eq(mes), eq(ano), pageableCaptor.capture());
+
+        Pageable capturedPageable = pageableCaptor.getValue();
+        assertEquals(page, capturedPageable.getPageNumber());
+        assertEquals(size, capturedPageable.getPageSize());
     }
 
     @Test

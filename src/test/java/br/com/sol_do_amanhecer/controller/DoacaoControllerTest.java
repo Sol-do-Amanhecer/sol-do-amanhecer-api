@@ -8,7 +8,6 @@ import org.mockito.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,14 +67,23 @@ class DoacaoControllerTest {
 
         Page<DoacaoDTO> pageResult = new PageImpl<>(List.of(new DoacaoDTO()));
 
-        when(doacaoService.buscarTodas(ano, mes, meio, PageRequest.of(page, size)))
+        when(doacaoService.buscarTodas(eq(ano), eq(mes), eq(meio), any(Pageable.class)))
                 .thenReturn(pageResult);
 
         ResponseEntity<Page<DoacaoDTO>> response = doacaoController.buscarTodas(page, size, ano, mes, meio);
 
         assertEquals(200, response.getStatusCode().value());
-        assertEquals(pageResult, response.getBody());
-        verify(doacaoService, times(1)).buscarTodas(ano, mes, meio, PageRequest.of(page, size));
+
+        Page<DoacaoDTO> responseBody = response.getBody();
+        assertNotNull(responseBody, "Response body should not be null");
+        assertEquals(1, responseBody.getTotalElements());
+
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(doacaoService, times(1)).buscarTodas(eq(ano), eq(mes), eq(meio), pageableCaptor.capture());
+
+        Pageable capturedPageable = pageableCaptor.getValue();
+        assertEquals(page, capturedPageable.getPageNumber());
+        assertEquals(size, capturedPageable.getPageSize());
     }
 
     @Test

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -123,11 +124,17 @@ public class UsuarioController implements Serializable {
             tags = {"Usuário"},
             responses = {
                     @ApiResponse(description = "Senha alterada com sucesso", responseCode = "200", content = @Content),
+                    @ApiResponse(description = "Requisição Inválida", responseCode = "400", content = @Content),
                     @ApiResponse(description = "Usuário não encontrado", responseCode = "404", content = @Content),
                     @ApiResponse(description = "Erro interno", responseCode = "500", content = @Content),
             })
-    public ResponseEntity<Void> trocarSenha(@PathVariable("id") UUID id, @RequestBody TrocarSenhaDTO dto) {
+    public ResponseEntity<?> trocarSenha(@PathVariable("id") UUID id, @RequestBody TrocarSenhaDTO dto) {
         LOGGER.debug("Requisição para trocar senha do usuário com ID: {}", id);
+
+        if (verificarSeParametrosSaoInvalidosParaTrocarSenha(dto)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Requisição inválida! A senha não pode ser nula ou vazia.");
+        }
+
         usuarioService.trocarSenha(id, dto.getSenha());
         return ResponseEntity.ok().build();
     }
@@ -166,5 +173,11 @@ public class UsuarioController implements Serializable {
         usuarioService.enviarEmailRedefinicaoSenhaPorUsername(username);
 
         return ResponseEntity.ok("Um e-mail foi enviado com instruções para redefinir sua senha.");
+    }
+
+    private boolean verificarSeParametrosSaoInvalidosParaTrocarSenha(TrocarSenhaDTO dto) {
+        return dto == null ||
+                dto.getSenha() == null ||
+                dto.getSenha().isBlank();
     }
 }
