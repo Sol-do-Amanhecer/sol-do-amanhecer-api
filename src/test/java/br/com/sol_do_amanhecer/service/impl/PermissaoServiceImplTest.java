@@ -44,15 +44,14 @@ class PermissaoServiceImplTest {
     void buscarPorId_deveRetornarPermissaoDTO_quandoEncontrar() {
         UUID id = UUID.randomUUID();
         Permissao permissao = new Permissao(id, "ROLE_USER");
-        PermissaoDTO permissaoDTO = new PermissaoDTO(id, "ROLE_USER");
 
         when(permissaoRepository.findById(id)).thenReturn(Optional.of(permissao));
 
         PermissaoDTO resultado = permissaoService.buscarPorId(id);
 
-        assertThat(resultado)
-                .usingRecursiveComparison()
-                .isEqualTo(permissaoDTO);
+        assertThat(resultado).isNotNull();
+        assertThat(resultado.getUuid()).isEqualTo(id);
+        assertThat(resultado.getDescricao()).isEqualTo("ROLE_USER");
 
         verify(permissaoRepository).findById(id);
     }
