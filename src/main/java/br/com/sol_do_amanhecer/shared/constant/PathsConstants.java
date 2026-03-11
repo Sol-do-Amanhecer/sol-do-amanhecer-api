@@ -15,7 +15,7 @@ public class PathsConstants {
     public static final String ATUALIZAR_USUARIO = USUARIO_BASE + "/atualizar/{id}";
     public static final String TROCAR_SENHA_USUARIO = USUARIO_BASE + "/trocar-senha/{id}";
     public static final String RESETAR_SENHA_USUARIO = USUARIO_BASE + "/resetar-senha/{username}";
-    public static final String APAGAR_USUARIO = "/remover/{id}";
+    public static final String APAGAR_USUARIO = USUARIO_BASE + "/remover/{id}";
 
     public static final String PERMISSAO_BASE = "/permissao";
     public static final String PERMISSAO_POR_ID = PERMISSAO_BASE + "/{id}";

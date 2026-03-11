@@ -6,8 +6,10 @@ import br.com.sol_do_amanhecer.shared.enums.EMeioDoacao;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 import org.springframework.data.domain.*;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,25 +67,18 @@ class DoacaoControllerTest {
         Integer mes = 5;
         EMeioDoacao meio = EMeioDoacao.PIX;
 
-        Page<DoacaoDTO> pageResult = new PageImpl<>(List.of(new DoacaoDTO()));
+        Sort sort = Sort.by("dataDoacao").ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<DoacaoDTO> pageResult = new PageImpl<>(List.of(new DoacaoDTO()), pageable, 1);
 
-        when(doacaoService.buscarTodas(eq(ano), eq(mes), eq(meio), any(Pageable.class)))
+        when(doacaoService.buscarTodas(ano, mes, meio, pageable))
                 .thenReturn(pageResult);
 
         ResponseEntity<Page<DoacaoDTO>> response = doacaoController.buscarTodas(page, size, ano, mes, meio);
 
         assertEquals(200, response.getStatusCode().value());
-
-        Page<DoacaoDTO> responseBody = response.getBody();
-        assertNotNull(responseBody, "Response body should not be null");
-        assertEquals(1, responseBody.getTotalElements());
-
-        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(doacaoService, times(1)).buscarTodas(eq(ano), eq(mes), eq(meio), pageableCaptor.capture());
-
-        Pageable capturedPageable = pageableCaptor.getValue();
-        assertEquals(page, capturedPageable.getPageNumber());
-        assertEquals(size, capturedPageable.getPageSize());
+        assertEquals(pageResult, response.getBody());
+        verify(doacaoService, times(1)).buscarTodas(ano, mes, meio, pageable);
     }
 
     @Test

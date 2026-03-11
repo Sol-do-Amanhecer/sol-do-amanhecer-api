@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -251,8 +252,14 @@ public class VoluntarioServiceImpl implements VoluntarioService {
     private void enviarEmailStatusVoluntario(Voluntario voluntario) {
         LOGGER.info("Iniciando envio de e-mail sobre o status do voluntário: {}", voluntario.getUuid());
 
-        Email email = emailRepository.findFirstByVoluntarioUuid(voluntario.getUuid())
-                .orElseThrow(() -> new UsuarioException("Nenhum e-mail encontrado para o voluntário."));
+        Optional<Email> emailOpt = emailRepository.findFirstByVoluntarioUuid(voluntario.getUuid());
+
+        if (emailOpt.isEmpty()) {
+            LOGGER.warn("Nenhum e-mail encontrado para o voluntário: {}. E-mail de status não enviado.", voluntario.getUuid());
+            return;
+        }
+
+        Email email = emailOpt.get();
         String primeiroNome = voluntario.getNomeCompleto().split(" ")[0];
         String assunto = "Status da Inscrição no Voluntariado";
         String mensagem = String.format(
@@ -271,8 +278,14 @@ public class VoluntarioServiceImpl implements VoluntarioService {
     private void enviarEmailStatusAprovacao(Voluntario voluntario, Boolean aprovado) {
         LOGGER.info("Enviando e-mail sobre status de aprovação para o voluntário: {}", voluntario.getUuid());
 
-        Email email = emailRepository.findFirstByVoluntarioUuid(voluntario.getUuid())
-                .orElseThrow(() -> new RuntimeException("Nenhum e-mail encontrado para o voluntário."));
+        Optional<Email> emailOpt = emailRepository.findFirstByVoluntarioUuid(voluntario.getUuid());
+
+        if (emailOpt.isEmpty()) {
+            LOGGER.warn("Nenhum e-mail encontrado para o voluntário: {}. E-mail de status de aprovação não enviado.", voluntario.getUuid());
+            return;
+        }
+
+        Email email = emailOpt.get();
 
         String assunto;
         String mensagem;

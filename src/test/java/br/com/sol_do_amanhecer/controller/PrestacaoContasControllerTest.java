@@ -63,24 +63,17 @@ class PrestacaoContasControllerTest {
         int size = 2;
         Integer mes = 5;
         Integer ano = 2024;
-        Page<PrestacaoContasDTO> paged = new PageImpl<>(List.of(new PrestacaoContasDTO()));
+        Sort sort = Sort.by("dataTransacao").descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<PrestacaoContasDTO> paged = new PageImpl<>(List.of(new PrestacaoContasDTO()), pageable, 1);
 
-        when(prestacaoContasService.buscarTodas(eq(mes), eq(ano), any(Pageable.class))).thenReturn(paged);
+        when(prestacaoContasService.buscarTodas(mes, ano, pageable)).thenReturn(paged);
 
         ResponseEntity<Page<PrestacaoContasDTO>> resp = prestacaoContasController.buscarTodas(page, size, mes, ano);
 
         assertEquals(200, resp.getStatusCode().value());
-
-        Page<PrestacaoContasDTO> responseBody = resp.getBody();
-        assertNotNull(responseBody, "Response body should not be null");
-        assertEquals(1, responseBody.getTotalElements());
-
-        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(prestacaoContasService, times(1)).buscarTodas(eq(mes), eq(ano), pageableCaptor.capture());
-
-        Pageable capturedPageable = pageableCaptor.getValue();
-        assertEquals(page, capturedPageable.getPageNumber());
-        assertEquals(size, capturedPageable.getPageSize());
+        assertEquals(paged, resp.getBody());
+        verify(prestacaoContasService, times(1)).buscarTodas(mes, ano, pageable);
     }
 
     @Test

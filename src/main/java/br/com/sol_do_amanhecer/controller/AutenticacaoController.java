@@ -48,13 +48,17 @@ public class AutenticacaoController implements Serializable {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Requisição inválida! Verifique os parâmetros.");
         }
 
-        TokenDTO token = autenticacaoService.entrar(loginDTO);
-
-        if (token == null) {
+        try {
+            TokenDTO token = autenticacaoService.entrar(loginDTO);
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas. Não foi possível autenticar.");
+            }
+            return ResponseEntity.ok(token);
+        } catch (org.springframework.security.authentication.BadCredentialsException |
+                 org.springframework.security.core.userdetails.UsernameNotFoundException e) {
+            LOGGER.warn("Falha de autenticação: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas. Não foi possível autenticar.");
         }
-
-        return ResponseEntity.ok(token);
     }
 
     @PutMapping(value = AUTH_REFRESH_TOKEN)

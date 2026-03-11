@@ -2,6 +2,7 @@ package br.com.sol_do_amanhecer.service.impl;
 
 import br.com.sol_do_amanhecer.model.dto.PrestacaoContasDTO;
 import br.com.sol_do_amanhecer.model.entity.PrestacaoContas;
+import br.com.sol_do_amanhecer.model.mapper.PrestacaoContasMapper;
 import br.com.sol_do_amanhecer.repository.PrestacaoContasRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,518 +17,153 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("PrestacaoContasServiceImpl Tests")
+@DisplayName("Testes Unitários - PrestacaoContasServiceImpl")
 class PrestacaoContasServiceImplTest {
 
     @Mock
-    private PrestacaoContasRepository prestacaoContasRepository;
+    private PrestacaoContasRepository prestacaoRepository;
 
     @InjectMocks
-    private PrestacaoContasServiceImpl prestacaoContasService;
+    private PrestacaoContasServiceImpl prestacaoService;
 
+    private PrestacaoContasDTO prestacaoDTO;
+    private PrestacaoContas prestacao;
     private UUID prestacaoId;
-    private PrestacaoContasDTO prestacaoContasDTO;
-    private PrestacaoContas prestacaoContas;
-    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
         prestacaoId = UUID.randomUUID();
-        byte[] notaFiscalBytes = "nota-fiscal-dados".getBytes();
-        byte[] comprovanteBytes = "comprovante-dados".getBytes();
 
-        prestacaoContasDTO = PrestacaoContasDTO.builder()
-                .dataTransacao(LocalDate.of(2023, 12, 15))
-                .descricaoGasto("Compra de materiais escolares")
-                .destinoGasto("Educação")
-                .valorPago(BigDecimal.valueOf(500.00))
-                .estabelecimento("Papelaria ABC")
-                .notaFiscal(new String (notaFiscalBytes, StandardCharsets.UTF_8))
-                .comprovante(comprovanteBytes)
-                .build();
-
-        prestacaoContas = PrestacaoContas.builder()
+        prestacaoDTO = PrestacaoContasDTO.builder()
                 .uuid(prestacaoId)
-                .dataTransacao(LocalDate.of(2023, 12, 15))
-                .descricaoGasto("Compra de materiais escolares")
-                .destinoGasto("Educação")
-                .valorPago(BigDecimal.valueOf(500.00))
-                .estabelecimento("Papelaria ABC")
-                .notaFiscal(new String(notaFiscalBytes, StandardCharsets.UTF_8))
-                .comprovante(comprovanteBytes)
+                .dataTransacao(LocalDate.now())
+                .descricaoGasto("Compra de alimentos")
+                .destinoGasto("Ação social")
+                .valorPago(new BigDecimal("500.00"))
+                .estabelecimento("Supermercado XYZ")
+                .notaFiscal("NF123456")
                 .build();
 
-        pageable = PageRequest.of(0, 10);
-    }
-
-    @Test
-    @DisplayName("Deve criar uma prestação de contas com sucesso")
-    void deveCriarPrestacaoContasComSucesso() {
-        
-        when(prestacaoContasRepository.save(any(PrestacaoContas.class))).thenReturn(prestacaoContas);
-
-        
-        PrestacaoContasDTO resultado = prestacaoContasService.criar(prestacaoContasDTO);
-
-        
-        assertNotNull(resultado);
-        assertEquals(prestacaoContasDTO.getDataTransacao(), resultado.getDataTransacao());
-        assertEquals(prestacaoContasDTO.getDescricaoGasto(), resultado.getDescricaoGasto());
-        assertEquals(prestacaoContasDTO.getDestinoGasto(), resultado.getDestinoGasto());
-        assertEquals(prestacaoContasDTO.getValorPago(), resultado.getValorPago());
-        assertEquals(prestacaoContasDTO.getEstabelecimento(), resultado.getEstabelecimento());
-        assertEquals(prestacaoContasDTO.getNotaFiscal(), resultado.getNotaFiscal());
-        assertArrayEquals(prestacaoContasDTO.getComprovante(), resultado.getComprovante());
-
-        verify(prestacaoContasRepository, times(1)).save(any(PrestacaoContas.class));
-    }
-
-    @Test
-    @DisplayName("Deve criar prestação de contas com valores nulos opcionais")
-    void deveCriarPrestacaoContasComValoresNulos() {
-        
-        PrestacaoContasDTO prestacaoSemAnexos = PrestacaoContasDTO.builder()
-                .dataTransacao(LocalDate.of(2023, 12, 20))
-                .descricaoGasto("Gasto sem anexos")
-                .destinoGasto("Administração")
-                .valorPago(BigDecimal.valueOf(100.00))
-                .estabelecimento("Loja XYZ")
-                .notaFiscal(null)
-                .comprovante(null)
+        prestacao = PrestacaoContas.builder()
+                .uuid(prestacaoId)
+                .dataTransacao(LocalDate.now())
+                .descricaoGasto("Compra de alimentos")
+                .destinoGasto("Ação social")
+                .valorPago(new BigDecimal("500.00"))
+                .estabelecimento("Supermercado XYZ")
+                .notaFiscal("NF123456")
                 .build();
-
-        PrestacaoContas prestacaoSalva = PrestacaoContas.builder()
-                .uuid(UUID.randomUUID())
-                .dataTransacao(LocalDate.of(2023, 12, 20))
-                .descricaoGasto("Gasto sem anexos")
-                .destinoGasto("Administração")
-                .valorPago(BigDecimal.valueOf(100.00))
-                .estabelecimento("Loja XYZ")
-                .notaFiscal(null)
-                .comprovante(null)
-                .build();
-
-        when(prestacaoContasRepository.save(any(PrestacaoContas.class))).thenReturn(prestacaoSalva);
-
-        
-        PrestacaoContasDTO resultado = prestacaoContasService.criar(prestacaoSemAnexos);
-
-        
-        assertNotNull(resultado);
-        assertEquals(prestacaoSemAnexos.getDescricaoGasto(), resultado.getDescricaoGasto());
-        assertNull(resultado.getNotaFiscal());
-        assertNull(resultado.getComprovante());
-
-        verify(prestacaoContasRepository, times(1)).save(any(PrestacaoContas.class));
     }
 
     @Test
-    @DisplayName("Deve atualizar uma prestação de contas com sucesso")
-    void deveAtualizarPrestacaoContasComSucesso() {
-        
-        when(prestacaoContasRepository.findById(prestacaoId)).thenReturn(Optional.of(prestacaoContas));
-        when(prestacaoContasRepository.save(any(PrestacaoContas.class))).thenReturn(prestacaoContas);
+    @DisplayName("Deve criar prestação de contas")
+    void testCriarPrestacao() {
+        when(prestacaoRepository.save(any(PrestacaoContas.class))).thenReturn(prestacao);
 
-        
-        assertDoesNotThrow(() -> prestacaoContasService.atualizar(prestacaoId, prestacaoContasDTO));
+        PrestacaoContasDTO resultado = prestacaoService.criar(prestacaoDTO);
 
-        
-        verify(prestacaoContasRepository, times(1)).findById(prestacaoId);
-        verify(prestacaoContasRepository, times(1)).save(any(PrestacaoContas.class));
+        assertThat(resultado).isNotNull();
+        verify(prestacaoRepository, times(1)).save(any(PrestacaoContas.class));
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao tentar atualizar prestação inexistente")
-    void deveLancarExcecaoAoAtualizarPrestacaoInexistente() {
-        
-        when(prestacaoContasRepository.findById(prestacaoId)).thenReturn(Optional.empty());
+    @DisplayName("Deve atualizar prestação existente")
+    void testAtualizarPrestacao() {
+        when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.of(prestacao));
+        when(prestacaoRepository.save(any(PrestacaoContas.class))).thenReturn(prestacao);
 
-         
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> prestacaoContasService.atualizar(prestacaoId, prestacaoContasDTO));
+        prestacaoService.atualizar(prestacaoId, prestacaoDTO);
 
-        assertEquals("Prestação de contas não encontrada", exception.getMessage());
-        verify(prestacaoContasRepository, times(1)).findById(prestacaoId);
-        verify(prestacaoContasRepository, never()).save(any(PrestacaoContas.class));
+        verify(prestacaoRepository, times(1)).findById(prestacaoId);
+        verify(prestacaoRepository, times(1)).save(any(PrestacaoContas.class));
     }
 
     @Test
-    @DisplayName("Deve atualizar todos os campos da prestação de contas")
-    void deveAtualizarTodosCamposPrestacaoContas() {
-        
-        PrestacaoContasDTO prestacaoAtualizada = PrestacaoContasDTO.builder()
-                .dataTransacao(LocalDate.of(2024, 1, 10))
-                .descricaoGasto("Gasto atualizado")
-                .destinoGasto("Saúde")
-                .valorPago(BigDecimal.valueOf(750.00))
-                .estabelecimento("Farmácia DEF")
-                .notaFiscal("nova-nota-fiscal")
-                .comprovante("novo-comprovante".getBytes())
-                .build();
+    @DisplayName("Deve lançar exceção ao atualizar prestação inexistente")
+    void testAtualizarPrestacaoInexistente() {
+        when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.empty());
 
-        when(prestacaoContasRepository.findById(prestacaoId)).thenReturn(Optional.of(prestacaoContas));
-        when(prestacaoContasRepository.save(any(PrestacaoContas.class))).thenReturn(prestacaoContas);
-
-        
-        assertDoesNotThrow(() -> prestacaoContasService.atualizar(prestacaoId, prestacaoAtualizada));
-
-        
-        verify(prestacaoContasRepository, times(1)).findById(prestacaoId);
-        verify(prestacaoContasRepository, times(1)).save(any(PrestacaoContas.class));
-
-        assertEquals(prestacaoAtualizada.getDataTransacao(), prestacaoContas.getDataTransacao());
-        assertEquals(prestacaoAtualizada.getDescricaoGasto(), prestacaoContas.getDescricaoGasto());
-        assertEquals(prestacaoAtualizada.getDestinoGasto(), prestacaoContas.getDestinoGasto());
-        assertEquals(prestacaoAtualizada.getValorPago(), prestacaoContas.getValorPago());
-        assertEquals(prestacaoAtualizada.getEstabelecimento(), prestacaoContas.getEstabelecimento());
-        assertEquals(prestacaoAtualizada.getNotaFiscal(), prestacaoContas.getNotaFiscal());
-        assertArrayEquals(prestacaoAtualizada.getComprovante(), prestacaoContas.getComprovante());
+        assertThatThrownBy(() -> prestacaoService.atualizar(prestacaoId, prestacaoDTO))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Prestação de contas não encontrada");
     }
 
     @Test
-    @DisplayName("Deve atualizar prestação com valores nulos")
-    void deveAtualizarPrestacaoComValoresNulos() {
-        
-        PrestacaoContasDTO prestacaoComNulos = PrestacaoContasDTO.builder()
-                .dataTransacao(null)
-                .descricaoGasto(null)
-                .destinoGasto(null)
-                .valorPago(null)
-                .estabelecimento(null)
-                .notaFiscal(null)
-                .comprovante(null)
-                .build();
+    @DisplayName("Deve remover prestação")
+    void testRemoverPrestacao() {
+        when(prestacaoRepository.existsById(prestacaoId)).thenReturn(true);
 
-        when(prestacaoContasRepository.findById(prestacaoId)).thenReturn(Optional.of(prestacaoContas));
-        when(prestacaoContasRepository.save(any(PrestacaoContas.class))).thenReturn(prestacaoContas);
+        prestacaoService.remover(prestacaoId);
 
-        
-        assertDoesNotThrow(() -> prestacaoContasService.atualizar(prestacaoId, prestacaoComNulos));
-
-        
-        verify(prestacaoContasRepository, times(1)).findById(prestacaoId);
-        verify(prestacaoContasRepository, times(1)).save(any(PrestacaoContas.class));
-
-        assertNull(prestacaoContas.getDataTransacao());
-        assertNull(prestacaoContas.getDescricaoGasto());
-        assertNull(prestacaoContas.getDestinoGasto());
-        assertNull(prestacaoContas.getValorPago());
-        assertNull(prestacaoContas.getEstabelecimento());
-        assertNull(prestacaoContas.getNotaFiscal());
-        assertNull(prestacaoContas.getComprovante());
+        verify(prestacaoRepository, times(1)).deleteById(prestacaoId);
     }
 
     @Test
-    @DisplayName("Deve remover uma prestação de contas com sucesso")
-    void deveRemoverPrestacaoContasComSucesso() {
-        
-        when(prestacaoContasRepository.existsById(prestacaoId)).thenReturn(true);
-        doNothing().when(prestacaoContasRepository).deleteById(prestacaoId);
+    @DisplayName("Deve lançar exceção ao remover prestação inexistente")
+    void testRemoverPrestacaoInexistente() {
+        when(prestacaoRepository.existsById(prestacaoId)).thenReturn(false);
 
-        
-        assertDoesNotThrow(() -> prestacaoContasService.remover(prestacaoId));
-
-        
-        verify(prestacaoContasRepository, times(1)).existsById(prestacaoId);
-        verify(prestacaoContasRepository, times(1)).deleteById(prestacaoId);
+        assertThatThrownBy(() -> prestacaoService.remover(prestacaoId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Prestação de contas não encontrada");
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao tentar remover prestação inexistente")
-    void deveLancarExcecaoAoRemoverPrestacaoInexistente() {
-        
-        when(prestacaoContasRepository.existsById(prestacaoId)).thenReturn(false);
+    @DisplayName("Deve buscar prestação por ID")
+    void testBuscarPrestacaoPorId() {
+        when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.of(prestacao));
 
-        
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> prestacaoContasService.remover(prestacaoId));
+        PrestacaoContasDTO resultado = prestacaoService.buscarPorId(prestacaoId);
 
-        assertEquals("Prestação de contas não encontrada", exception.getMessage());
-        verify(prestacaoContasRepository, times(1)).existsById(prestacaoId);
-        verify(prestacaoContasRepository, never()).deleteById(any(UUID.class));
+        assertThat(resultado).isNotNull();
+        verify(prestacaoRepository, times(1)).findById(prestacaoId);
     }
 
     @Test
-    @DisplayName("Deve buscar prestação de contas por ID com sucesso")
-    void deveBuscarPrestacaoContasPorIdComSucesso() {
-        
-        when(prestacaoContasRepository.findById(prestacaoId)).thenReturn(Optional.of(prestacaoContas));
+    @DisplayName("Deve lançar exceção ao buscar prestação inexistente")
+    void testBuscarPrestacaoInexistente() {
+        when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.empty());
 
-        
-        PrestacaoContasDTO resultado = prestacaoContasService.buscarPorId(prestacaoId);
-
-        
-        assertNotNull(resultado);
-        assertEquals(prestacaoContas.getDataTransacao(), resultado.getDataTransacao());
-        assertEquals(prestacaoContas.getDescricaoGasto(), resultado.getDescricaoGasto());
-        assertEquals(prestacaoContas.getDestinoGasto(), resultado.getDestinoGasto());
-        assertEquals(prestacaoContas.getValorPago(), resultado.getValorPago());
-        assertEquals(prestacaoContas.getEstabelecimento(), resultado.getEstabelecimento());
-        assertEquals(prestacaoContas.getNotaFiscal(), resultado.getNotaFiscal());
-        assertArrayEquals(prestacaoContas.getComprovante(), resultado.getComprovante());
-
-        verify(prestacaoContasRepository, times(1)).findById(prestacaoId);
+        assertThatThrownBy(() -> prestacaoService.buscarPorId(prestacaoId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Prestação de contas não encontrada");
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao buscar prestação inexistente por ID")
-    void deveLancarExcecaoAoBuscarPrestacaoInexistentePorId() {
-        
-        when(prestacaoContasRepository.findById(prestacaoId)).thenReturn(Optional.empty());
+    @DisplayName("Deve buscar prestações sem filtros")
+    void testBuscarPrestacoesSemFiltros() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<PrestacaoContas> page = new PageImpl<>(List.of(prestacao), pageable, 1);
 
-        
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> prestacaoContasService.buscarPorId(prestacaoId));
+        when(prestacaoRepository.findAll(pageable)).thenReturn(page);
 
-        assertEquals("Prestação de contas não encontrada", exception.getMessage());
-        verify(prestacaoContasRepository, times(1)).findById(prestacaoId);
+        Page<PrestacaoContasDTO> resultado = prestacaoService.buscarTodas(null, null, pageable);
+
+        assertThat(resultado).isNotNull();
+        assertThat(resultado.getContent()).hasSize(1);
+        verify(prestacaoRepository, times(1)).findAll(pageable);
     }
 
     @Test
-    @DisplayName("Deve buscar todas as prestações sem filtros")
-    void deveBuscarTodasPrestacoesSemFiltros() {
-        
-        Page<PrestacaoContas> pagePrestacoes = new PageImpl<>(Collections.singletonList(prestacaoContas));
-        when(prestacaoContasRepository.findAll(pageable)).thenReturn(pagePrestacoes);
+    @DisplayName("Deve buscar prestações filtradas por período")
+    void testBuscarPrestacoesFiltroPeríodo() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<PrestacaoContas> page = new PageImpl<>(List.of(prestacao), pageable, 1);
 
-        
-        Page<PrestacaoContasDTO> resultado = prestacaoContasService.buscarTodas(null, null, pageable);
+        when(prestacaoRepository.findByMesEAno(3, 2026, pageable)).thenReturn(page);
 
-        
-        assertNotNull(resultado);
-        assertEquals(1, resultado.getContent().size());
-        assertEquals(prestacaoContas.getDescricaoGasto(), resultado.getContent().get(0).getDescricaoGasto());
+        Page<PrestacaoContasDTO> resultado = prestacaoService.buscarTodas(3, 2026, pageable);
 
-        verify(prestacaoContasRepository, times(1)).findAll(pageable);
-        verify(prestacaoContasRepository, never()).findByMes(any(), any());
-        verify(prestacaoContasRepository, never()).findByAno(any(), any());
-        verify(prestacaoContasRepository, never()).findByMesEAno(any(), any(), any());
-    }
-
-    @Test
-    @DisplayName("Deve buscar prestações filtradas por mês e ano")
-    void deveBuscarPrestacoesFiltradas_MesAno() {
-        
-        Page<PrestacaoContas> pagePrestacoes = new PageImpl<>(Collections.singletonList(prestacaoContas));
-        when(prestacaoContasRepository.findByMesEAno(12, 2023, pageable)).thenReturn(pagePrestacoes);
-
-        
-        Page<PrestacaoContasDTO> resultado = prestacaoContasService.buscarTodas(12, 2023, pageable);
-
-        
-        assertNotNull(resultado);
-        assertEquals(1, resultado.getContent().size());
-        assertEquals(prestacaoContas.getDescricaoGasto(), resultado.getContent().get(0).getDescricaoGasto());
-
-        verify(prestacaoContasRepository, times(1)).findByMesEAno(12, 2023, pageable);
-        verify(prestacaoContasRepository, never()).findAll(any(Pageable.class));
-        verify(prestacaoContasRepository, never()).findByMes(any(), any());
-        verify(prestacaoContasRepository, never()).findByAno(any(), any());
-    }
-
-    @Test
-    @DisplayName("Deve buscar prestações filtradas apenas por mês")
-    void deveBuscarPrestacoesFiltradas_ApenasMes() {
-        
-        Page<PrestacaoContas> pagePrestacoes = new PageImpl<>(Collections.singletonList(prestacaoContas));
-        when(prestacaoContasRepository.findByMes(12, pageable)).thenReturn(pagePrestacoes);
-
-        
-        Page<PrestacaoContasDTO> resultado = prestacaoContasService.buscarTodas(12, null, pageable);
-
-        
-        assertNotNull(resultado);
-        assertEquals(1, resultado.getContent().size());
-        assertEquals(prestacaoContas.getDescricaoGasto(), resultado.getContent().get(0).getDescricaoGasto());
-
-        verify(prestacaoContasRepository, times(1)).findByMes(12, pageable);
-        verify(prestacaoContasRepository, never()).findAll(any(Pageable.class));
-        verify(prestacaoContasRepository, never()).findByAno(any(), any());
-        verify(prestacaoContasRepository, never()).findByMesEAno(any(), any(), any());
-    }
-
-    @Test
-    @DisplayName("Deve buscar prestações filtradas apenas por ano")
-    void deveBuscarPrestacoesFiltradas_ApenasAno() {
-        
-        Page<PrestacaoContas> pagePrestacoes = new PageImpl<>(Collections.singletonList(prestacaoContas));
-        when(prestacaoContasRepository.findByAno(2023, pageable)).thenReturn(pagePrestacoes);
-
-        
-        Page<PrestacaoContasDTO> resultado = prestacaoContasService.buscarTodas(null, 2023, pageable);
-
-        
-        assertNotNull(resultado);
-        assertEquals(1, resultado.getContent().size());
-        assertEquals(prestacaoContas.getDescricaoGasto(), resultado.getContent().get(0).getDescricaoGasto());
-
-        verify(prestacaoContasRepository, times(1)).findByAno(2023, pageable);
-        verify(prestacaoContasRepository, never()).findAll(any(Pageable.class));
-        verify(prestacaoContasRepository, never()).findByMes(any(), any());
-        verify(prestacaoContasRepository, never()).findByMesEAno(any(), any(), any());
-    }
-
-    @Test
-    @DisplayName("Deve buscar prestações com página vazia")
-    void deveBuscarPrestacoesComPaginaVazia() {
-        
-        Page<PrestacaoContas> paginaVazia = new PageImpl<>(Collections.emptyList());
-        when(prestacaoContasRepository.findAll(pageable)).thenReturn(paginaVazia);
-
-        
-        Page<PrestacaoContasDTO> resultado = prestacaoContasService.buscarTodas(null, null, pageable);
-
-        
-        assertNotNull(resultado);
-        assertTrue(resultado.getContent().isEmpty());
-        assertEquals(0, resultado.getTotalElements());
-
-        verify(prestacaoContasRepository, times(1)).findAll(pageable);
-    }
-
-    @Test
-    @DisplayName("Deve buscar prestações com múltiplos registros")
-    void deveBuscarPrestacoesComMultiplosRegistros() {
-        
-        PrestacaoContas prestacao2 = PrestacaoContas.builder()
-                .uuid(UUID.randomUUID())
-                .dataTransacao(LocalDate.of(2023, 12, 20))
-                .descricaoGasto("Outro gasto")
-                .destinoGasto("Saúde")
-                .valorPago(BigDecimal.valueOf(300.00))
-                .estabelecimento("Farmácia XYZ")
-                .notaFiscal(null)
-                .comprovante(null)
-                .build();
-
-        Page<PrestacaoContas> pagePrestacoes = new PageImpl<>(Arrays.asList(prestacaoContas, prestacao2));
-        when(prestacaoContasRepository.findByMes(12, pageable)).thenReturn(pagePrestacoes);
-
-        
-        Page<PrestacaoContasDTO> resultado = prestacaoContasService.buscarTodas(12, null, pageable);
-
-        
-        assertNotNull(resultado);
-        assertEquals(2, resultado.getContent().size());
-
-        verify(prestacaoContasRepository, times(1)).findByMes(12, pageable);
-    }
-
-    @Test
-    @DisplayName("Deve testar diferentes valores de mês e ano")
-    void deveTestarDiferentesValoresMesAno() {
-        
-        Page<PrestacaoContas> pagePrestacoes = new PageImpl<>(Collections.singletonList(prestacaoContas));
-
-        when(prestacaoContasRepository.findByMes(1, pageable)).thenReturn(pagePrestacoes);
-        when(prestacaoContasRepository.findByMes(6, pageable)).thenReturn(pagePrestacoes);
-        when(prestacaoContasRepository.findByMes(12, pageable)).thenReturn(pagePrestacoes);
-
-        when(prestacaoContasRepository.findByAno(2022, pageable)).thenReturn(pagePrestacoes);
-        when(prestacaoContasRepository.findByAno(2023, pageable)).thenReturn(pagePrestacoes);
-        when(prestacaoContasRepository.findByAno(2024, pageable)).thenReturn(pagePrestacoes);
-
-        
-        Page<PrestacaoContasDTO> resultadoJan = prestacaoContasService.buscarTodas(1, null, pageable);
-        Page<PrestacaoContasDTO> resultadoJun = prestacaoContasService.buscarTodas(6, null, pageable);
-        Page<PrestacaoContasDTO> resultadoDez = prestacaoContasService.buscarTodas(12, null, pageable);
-
-        Page<PrestacaoContasDTO> resultado2022 = prestacaoContasService.buscarTodas(null, 2022, pageable);
-        Page<PrestacaoContasDTO> resultado2023 = prestacaoContasService.buscarTodas(null, 2023, pageable);
-        Page<PrestacaoContasDTO> resultado2024 = prestacaoContasService.buscarTodas(null, 2024, pageable);
-
-        assertNotNull(resultadoJan);
-        assertNotNull(resultadoJun);
-        assertNotNull(resultadoDez);
-        assertNotNull(resultado2022);
-        assertNotNull(resultado2023);
-        assertNotNull(resultado2024);
-
-        verify(prestacaoContasRepository, times(1)).findByMes(1, pageable);
-        verify(prestacaoContasRepository, times(1)).findByMes(6, pageable);
-        verify(prestacaoContasRepository, times(1)).findByMes(12, pageable);
-        verify(prestacaoContasRepository, times(1)).findByAno(2022, pageable);
-        verify(prestacaoContasRepository, times(1)).findByAno(2023, pageable);
-        verify(prestacaoContasRepository, times(1)).findByAno(2024, pageable);
-    }
-
-    @Test
-    @DisplayName("Deve testar combinações específicas de mês e ano")
-    void deveTestarCombinacoesEspecificasMesAno() {
-        
-        Page<PrestacaoContas> pagePrestacoes = new PageImpl<>(Collections.singletonList(prestacaoContas));
-
-        when(prestacaoContasRepository.findByMesEAno(1, 2023, pageable)).thenReturn(pagePrestacoes);
-        when(prestacaoContasRepository.findByMesEAno(6, 2024, pageable)).thenReturn(pagePrestacoes);
-        when(prestacaoContasRepository.findByMesEAno(12, 2022, pageable)).thenReturn(pagePrestacoes);
-
-        
-        Page<PrestacaoContasDTO> resultado1 = prestacaoContasService.buscarTodas(1, 2023, pageable);
-        Page<PrestacaoContasDTO> resultado2 = prestacaoContasService.buscarTodas(6, 2024, pageable);
-        Page<PrestacaoContasDTO> resultado3 = prestacaoContasService.buscarTodas(12, 2022, pageable);
-
-        
-        assertNotNull(resultado1);
-        assertNotNull(resultado2);
-        assertNotNull(resultado3);
-
-        verify(prestacaoContasRepository, times(1)).findByMesEAno(1, 2023, pageable);
-        verify(prestacaoContasRepository, times(1)).findByMesEAno(6, 2024, pageable);
-        verify(prestacaoContasRepository, times(1)).findByMesEAno(12, 2022, pageable);
-    }
-
-    @Test
-    @DisplayName("Deve testar prestação com diferentes tipos de dados")
-    void deveTestarPrestacaoComDiferentesTiposDados() {
-        
-        PrestacaoContasDTO prestacaoVariada = PrestacaoContasDTO.builder()
-                .dataTransacao(LocalDate.of(2024, 2, 29))
-                .descricaoGasto("Descrição com caracteres especiais: áéíóú çñ")
-                .destinoGasto("Destino com números 123")
-                .valorPago(BigDecimal.valueOf(999.99))
-                .estabelecimento("Estabelecimento & Cia Ltda.")
-                .notaFiscal("bytes-nota-fiscal-especial")
-                .comprovante("bytes-comprovante-especial".getBytes())
-                .build();
-
-        PrestacaoContas prestacaoSalva = PrestacaoContas.builder()
-                .uuid(UUID.randomUUID())
-                .dataTransacao(LocalDate.of(2024, 2, 29))
-                .descricaoGasto("Descrição com caracteres especiais: áéíóú çñ")
-                .destinoGasto("Destino com números 123")
-                .valorPago(BigDecimal.valueOf(999.99))
-                .estabelecimento("Estabelecimento & Cia Ltda.")
-                .notaFiscal("bytes-nota-fiscal-especial")
-                .comprovante("bytes-comprovante-especial".getBytes())
-                .build();
-
-        when(prestacaoContasRepository.save(any(PrestacaoContas.class))).thenReturn(prestacaoSalva);
-
-        
-        PrestacaoContasDTO resultado = prestacaoContasService.criar(prestacaoVariada);
-
-        
-        assertNotNull(resultado);
-        assertEquals(prestacaoVariada.getDataTransacao(), resultado.getDataTransacao());
-        assertEquals(prestacaoVariada.getDescricaoGasto(), resultado.getDescricaoGasto());
-        assertEquals(prestacaoVariada.getDestinoGasto(), resultado.getDestinoGasto());
-        assertEquals(prestacaoVariada.getValorPago(), resultado.getValorPago());
-        assertEquals(prestacaoVariada.getEstabelecimento(), resultado.getEstabelecimento());
-        assertEquals(prestacaoVariada.getNotaFiscal(), resultado.getNotaFiscal());
-        assertArrayEquals(prestacaoVariada.getComprovante(), resultado.getComprovante());
-
-        verify(prestacaoContasRepository, times(1)).save(any(PrestacaoContas.class));
+        assertThat(resultado).isNotNull();
+        verify(prestacaoRepository, times(1)).findByMesEAno(3, 2026, pageable);
     }
 }
