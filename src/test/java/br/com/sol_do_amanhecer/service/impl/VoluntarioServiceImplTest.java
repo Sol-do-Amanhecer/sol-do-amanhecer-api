@@ -3,6 +3,7 @@ package br.com.sol_do_amanhecer.service.impl;
 import br.com.sol_do_amanhecer.model.dto.*;
 import br.com.sol_do_amanhecer.model.entity.*;
 import br.com.sol_do_amanhecer.repository.*;
+import br.com.sol_do_amanhecer.util.EmailUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -42,6 +43,9 @@ class VoluntarioServiceImplTest {
 
     @Mock
     private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private EmailUtil emailUtil;
 
     @InjectMocks
     private VoluntarioServiceImpl voluntarioService;
@@ -136,6 +140,9 @@ class VoluntarioServiceImplTest {
         @DisplayName("Deve criar voluntário com sucesso")
         void deveCriarVoluntarioComSucesso() {
             when(voluntarioRepository.save(any(Voluntario.class))).thenReturn(voluntario);
+            Email emailPrimario = new Email();
+            emailPrimario.setEmail("joao@email.com");
+            when(emailRepository.findFirstByVoluntarioUuid(voluntarioId)).thenReturn(Optional.of(emailPrimario));
 
             VoluntarioDTO resultado = voluntarioService.criar(
                     voluntarioDTO, emailDTOList, telefoneDTOList, formularioDTO
@@ -146,6 +153,8 @@ class VoluntarioServiceImplTest {
             verify(emailRepository, times(2)).save(any(Email.class));
             verify(telefoneRepository, times(2)).save(any(Telefone.class));
             verify(formularioVoluntarioRepository, times(1)).save(any(FormularioVoluntario.class));
+            verify(emailRepository).findFirstByVoluntarioUuid(voluntarioId);
+            verify(emailUtil).enviarEmail(eq(emailPrimario.getEmail()), anyString(), anyString());
         }
 
         @Test
@@ -153,6 +162,9 @@ class VoluntarioServiceImplTest {
         void deveCriarVoluntarioComListaVaziaDeEmails() {
             when(voluntarioRepository.save(any(Voluntario.class))).thenReturn(voluntario);
             List<EmailDTO> emailsVazios = new ArrayList<>();
+            
+            // Mocking findFirstByVoluntarioUuid to return empty, simulating no email found
+            when(emailRepository.findFirstByVoluntarioUuid(any(UUID.class))).thenReturn(Optional.empty());
 
             VoluntarioDTO resultado = voluntarioService.criar(
                     voluntarioDTO, emailsVazios, telefoneDTOList, formularioDTO
@@ -160,6 +172,7 @@ class VoluntarioServiceImplTest {
 
             assertThat(resultado).isNotNull();
             verify(emailRepository, never()).save(any(Email.class));
+            verify(emailUtil, never()).enviarEmail(anyString(), anyString(), anyString());
         }
     }
 
@@ -225,25 +238,26 @@ class VoluntarioServiceImplTest {
         @Test
         @DisplayName("Deve remover voluntário com sucesso")
         void deveRemoverVoluntarioComSucesso() {
-            when(voluntarioRepository.existsById(voluntarioId)).thenReturn(true);
+            when(voluntarioRepository.findById(voluntarioId)).thenReturn(Optional.of(voluntario));
 
             assertThatCode(() -> voluntarioService.remover(voluntarioId))
                     .doesNotThrowAnyException();
 
-            verify(voluntarioRepository).existsById(voluntarioId);
-            verify(voluntarioRepository).deleteById(voluntarioId);
+            verify(voluntarioRepository).findById(voluntarioId);
+            verify(voluntarioRepository).save(voluntario);
+            assertThat(voluntario.getAtivo()).isFalse();
         }
 
         @Test
         @DisplayName("Deve lançar exceção quando voluntário não existe")
         void deveLancarExcecaoQuandoVoluntarioNaoExiste() {
-            when(voluntarioRepository.existsById(voluntarioId)).thenReturn(false);
+            when(voluntarioRepository.findById(voluntarioId)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> voluntarioService.remover(voluntarioId))
                     .isInstanceOf(RuntimeException.class)
-                    .hasMessage("Voluntário não encontrado");
+                    .hasMessage("Voluntário não encontrado com ID: " + voluntarioId);
 
-            verify(voluntarioRepository, never()).deleteById(any(UUID.class));
+            verify(voluntarioRepository, never()).save(any(Voluntario.class));
         }
     }
 
@@ -322,7 +336,7 @@ class VoluntarioServiceImplTest {
             assertThat(resultado.getContent()).hasSize(1);
             assertThat(resultado.getContent().get(0).getUsuarioDTO()).isNotNull();
             verify(voluntarioRepository).findByAtivoAndAprovadoIsNotNull(true, pageable);
-            verify(voluntarioRepository, never()).findAll(pageable);
+            verify(voluntarioRepository, never()).findAllByAprovadoIsNotNull(pageable);
         }
 
         @Test
@@ -331,7 +345,7 @@ class VoluntarioServiceImplTest {
             Pageable pageable = PageRequest.of(0, 10);
             Page<Voluntario> page = new PageImpl<>(Collections.singletonList(voluntario), pageable, 1);
 
-            when(voluntarioRepository.findAll(pageable)).thenReturn(page);
+            when(voluntarioRepository.findAllByAprovadoIsNotNull(pageable)).thenReturn(page);
             when(emailRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
             when(telefoneRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
             when(formularioVoluntarioRepository.findByVoluntario(any(Voluntario.class)))
@@ -342,7 +356,7 @@ class VoluntarioServiceImplTest {
 
             assertThat(resultado).isNotNull();
             assertThat(resultado.getContent()).hasSize(1);
-            verify(voluntarioRepository).findAll(pageable);
+            verify(voluntarioRepository).findAllByAprovadoIsNotNull(pageable);
             verify(voluntarioRepository, never()).findByAtivoAndAprovadoIsNotNull(anyBoolean(), any(Pageable.class));
         }
 
@@ -352,7 +366,7 @@ class VoluntarioServiceImplTest {
             Pageable pageable = PageRequest.of(0, 10);
             Page<Voluntario> page = new PageImpl<>(Collections.singletonList(voluntario), pageable, 1);
 
-            when(voluntarioRepository.findAll(pageable)).thenReturn(page);
+            when(voluntarioRepository.findAllByAprovadoIsNotNull(pageable)).thenReturn(page);
             when(emailRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
             when(telefoneRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
             when(formularioVoluntarioRepository.findByVoluntario(any(Voluntario.class)))
@@ -371,7 +385,7 @@ class VoluntarioServiceImplTest {
             Pageable pageable = PageRequest.of(0, 10);
             Page<Voluntario> page = new PageImpl<>(Collections.singletonList(voluntario), pageable, 1);
 
-            when(voluntarioRepository.findAll(pageable)).thenReturn(page);
+            when(voluntarioRepository.findAllByAprovadoIsNotNull(pageable)).thenReturn(page);
             when(emailRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
             when(telefoneRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
             when(formularioVoluntarioRepository.findByVoluntario(any(Voluntario.class)))

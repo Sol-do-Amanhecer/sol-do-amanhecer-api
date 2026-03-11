@@ -30,34 +30,34 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(
                         authorizeHttpRequests -> authorizeHttpRequests
-//                                .requestMatchers("/**").permitAll()
-                                .requestMatchers(
-                                        "/sol-do-amanhecer/api/acao/",
-                                        "/sol-do-amanhecer/api/doacao/",
-                                        "/sol-do-amanhecer/api/voluntario/criar",
-                                        "/sol-do-amanhecer/api/usuario/trocar-senha/",
-                                        "/sol-do-amanhecer/api/usuario/resetar-senha/",
-//                                        "/sol-do-amanhecer/api/usuario/**", //Só para teste localhost
-//                                        "/sol-do-amanhecer/api/permissao/**", //Só para teste localhost
-//                                        "/sol-do-amanhecer/api/voluntario/**", //Só para teste localhost
-                                        "/sol-do-amanhecer/api/prestacao/",
-                                        "/sol-do-amanhecer/api/objetivo/",
-                                        "/sol-do-amanhecer/api/autenticacao/**",
-                                        "/swagger-ui/**",
-                                        "/v3/api-docs/**"
-                                ).permitAll()
-                                .requestMatchers(
-                                        "/sol-do-amanhecer/api/acao/**",
-                                        "/sol-do-amanhecer/api/doacao/**",
-                                        "/sol-do-amanhecer/api/voluntario/**",
-                                        "/sol-do-amanhecer/api/usuario/**",
-                                        "/sol-do-amanhecer/api/prestacao/**",
-                                        "/sol-do-amanhecer/api/objetivo/**"
-                                ).authenticated()
-                                .requestMatchers(
-                                        "/sol-do-amanhecer/api/permissao/**"
-                                ).denyAll()
-                                .anyRequest().authenticated()
+                                .requestMatchers("/**").permitAll()
+//                                .requestMatchers(
+//                                        "/sol-do-amanhecer/api/acao/",
+//                                        "/sol-do-amanhecer/api/doacao/",
+//                                        "/sol-do-amanhecer/api/voluntario/criar",
+//                                        "/sol-do-amanhecer/api/usuario/trocar-senha/",
+//                                        "/sol-do-amanhecer/api/usuario/resetar-senha/",
+////                                        "/sol-do-amanhecer/api/usuario/**", //Só para teste localhost
+////                                        "/sol-do-amanhecer/api/permissao/**", //Só para teste localhost
+////                                        "/sol-do-amanhecer/api/voluntario/**", //Só para teste localhost
+//                                        "/sol-do-amanhecer/api/prestacao/",
+//                                        "/sol-do-amanhecer/api/objetivo/",
+//                                        "/sol-do-amanhecer/api/autenticacao/**",
+//                                        "/swagger-ui/**",
+//                                        "/v3/api-docs/**"
+//                                ).permitAll()
+//                                .requestMatchers(
+//                                        "/sol-do-amanhecer/api/acao/**",
+//                                        "/sol-do-amanhecer/api/doacao/**",
+//                                        "/sol-do-amanhecer/api/voluntario/**",
+//                                        "/sol-do-amanhecer/api/usuario/**",
+//                                        "/sol-do-amanhecer/api/prestacao/**",
+//                                        "/sol-do-amanhecer/api/objetivo/**"
+//                                ).authenticated()
+//                                .requestMatchers(
+//                                        "/sol-do-amanhecer/api/permissao/**"
+//                                ).denyAll()
+//                                .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())
                 .apply(new JwtConfigurer(jwtTokenProvider));

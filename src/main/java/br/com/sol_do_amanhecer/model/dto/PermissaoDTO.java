@@ -23,6 +23,7 @@ public class PermissaoDTO {
     private LocalDateTime atualizadoEm;
 
     public PermissaoDTO(UUID uuid, String descricao) {
+        this.uuid = uuid;
         this.descricao = descricao;
     }
 }

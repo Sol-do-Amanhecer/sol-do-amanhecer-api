@@ -63,15 +63,17 @@ class PrestacaoContasControllerTest {
         int size = 2;
         Integer mes = 5;
         Integer ano = 2024;
-        Page<PrestacaoContasDTO> paged = new PageImpl<>(List.of(new PrestacaoContasDTO()));
+        Sort sort = Sort.by("dataTransacao").descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<PrestacaoContasDTO> paged = new PageImpl<>(List.of(new PrestacaoContasDTO()), pageable, 1);
 
-        when(prestacaoContasService.buscarTodas(mes, ano, PageRequest.of(page, size))).thenReturn(paged);
+        when(prestacaoContasService.buscarTodas(mes, ano, pageable)).thenReturn(paged);
 
         ResponseEntity<Page<PrestacaoContasDTO>> resp = prestacaoContasController.buscarTodas(page, size, mes, ano);
 
         assertEquals(200, resp.getStatusCode().value());
         assertEquals(paged, resp.getBody());
-        verify(prestacaoContasService, times(1)).buscarTodas(mes, ano, PageRequest.of(page, size));
+        verify(prestacaoContasService, times(1)).buscarTodas(mes, ano, pageable);
     }
 
     @Test

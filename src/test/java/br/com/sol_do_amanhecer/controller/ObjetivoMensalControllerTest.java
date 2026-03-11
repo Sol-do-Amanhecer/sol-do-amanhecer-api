@@ -7,6 +7,7 @@ import br.com.sol_do_amanhecer.shared.enums.EMes;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 import org.springframework.data.domain.*;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -65,15 +66,17 @@ class ObjetivoMensalControllerTest {
         int size = 10;
         EMes mes = EMes.JANEIRO;
         Integer ano = 2024;
-        Page<ObjetivoMensalDTO> objetivos = new PageImpl<>(List.of(new ObjetivoMensalDTO()));
+        Sort sort = Sort.by("ano").descending().and(Sort.by("mes").descending());
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<ObjetivoMensalDTO> objetivos = new PageImpl<>(List.of(new ObjetivoMensalDTO()), pageable, 1);
 
-        when(objetivoMensalService.buscarTodos(mes, ano, PageRequest.of(page, size))).thenReturn(objetivos);
+        when(objetivoMensalService.buscarTodos(mes, ano, pageable)).thenReturn(objetivos);
 
         ResponseEntity<Page<ObjetivoMensalDTO>> response = objetivoMensalController.buscarTodos(page, size, mes, ano);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(objetivos, response.getBody());
-        verify(objetivoMensalService, times(1)).buscarTodos(mes, ano, PageRequest.of(page, size));
+        verify(objetivoMensalService, times(1)).buscarTodos(mes, ano, pageable);
     }
 
     @Test

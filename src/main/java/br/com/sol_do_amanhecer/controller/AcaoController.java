@@ -49,8 +49,16 @@ public class AcaoController implements Serializable {
     @Operation(summary = "Buscar ação por ID", description = "Busca uma ação pelo ID")
     public ResponseEntity<AcaoResponseDTO> buscarPorId(@PathVariable(value = "id") UUID id) {
         LOGGER.debug("Requisição para buscar ação por ID");
-        AcaoResponseDTO acaoResponseDTO = this.acaoService.buscarPorId(id);
-        return ResponseEntity.ok().body(acaoResponseDTO);
+        try {
+            AcaoResponseDTO acaoResponseDTO = this.acaoService.buscarPorId(id);
+            if (acaoResponseDTO == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok().body(acaoResponseDTO);
+        } catch (RuntimeException ex) {
+            LOGGER.warn("Ação não encontrada: {}", ex.getMessage());
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping(value = TODAS_ACOES)

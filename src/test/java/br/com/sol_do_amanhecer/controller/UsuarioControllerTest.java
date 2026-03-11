@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Collections;
@@ -72,7 +73,7 @@ public class UsuarioControllerTest {
         @Test
         @DisplayName("Deve retornar lista paginada de usuários sem filtro")
         void buscarTodos_SemFiltro() {
-            Pageable pageable = PageRequest.of(0, 10);
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("criadoEm").ascending());
             UsuarioDTO dto = criaUsuarioDTO();
             Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, 1);
 
@@ -90,7 +91,7 @@ public class UsuarioControllerTest {
         @Test
         @DisplayName("Deve retornar lista paginada de usuários ativos")
         void buscarTodos_ComFiltroAtivo() {
-            Pageable pageable = PageRequest.of(0, 10);
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("criadoEm").ascending());
             UsuarioDTO dto = criaUsuarioDTO();
             Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, 1);
 
@@ -108,7 +109,7 @@ public class UsuarioControllerTest {
         @Test
         @DisplayName("Deve retornar lista paginada de usuários inativos")
         void buscarTodos_ComFiltroInativo() {
-            Pageable pageable = PageRequest.of(0, 10);
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("criadoEm").ascending());
             UsuarioDTO dto = criaUsuarioDTO();
             dto.setAtivo(false);
             Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, 1);

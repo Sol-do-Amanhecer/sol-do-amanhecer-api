@@ -384,17 +384,28 @@ class UsuarioServiceImplTest {
     }
 
     @Test
-    @DisplayName("Deve remover um usuário existente com sucesso")
+    @DisplayName("Deve remover um usuário existente com sucesso (soft delete)")
     void removerUsuario_sucesso() {
         Usuario userEntity = new Usuario();
         userEntity.setUuid(USUARIO_ID);
+        userEntity.setContaExpirada(false);
+        userEntity.setContaBloqueada(false);
+        userEntity.setCredenciaisExpiradas(false);
+        userEntity.setAtivo(true);
 
         when(usuarioRepository.findById(USUARIO_ID)).thenReturn(Optional.of(userEntity));
+        when(usuarioRepository.save(userEntity)).thenReturn(userEntity);
 
         usuarioService.remover(USUARIO_ID);
 
         verify(usuarioRepository).findById(USUARIO_ID);
-        verify(usuarioRepository).delete(userEntity);
+        // soft delete: flags devem ser marcadas e entidade salva
+        assertThat(userEntity.getContaExpirada()).isTrue();
+        assertThat(userEntity.getContaBloqueada()).isTrue();
+        assertThat(userEntity.getCredenciaisExpiradas()).isTrue();
+        assertThat(userEntity.getAtivo()).isFalse();
+        verify(usuarioRepository).save(userEntity);
+        verify(usuarioRepository, never()).delete(any());
     }
 
     @Test

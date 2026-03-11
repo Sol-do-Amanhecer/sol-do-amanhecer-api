@@ -6,6 +6,7 @@ import br.com.sol_do_amanhecer.shared.enums.EMeioDoacao;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 import org.springframework.data.domain.*;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
@@ -66,16 +67,18 @@ class DoacaoControllerTest {
         Integer mes = 5;
         EMeioDoacao meio = EMeioDoacao.PIX;
 
-        Page<DoacaoDTO> pageResult = new PageImpl<>(List.of(new DoacaoDTO()));
+        Sort sort = Sort.by("dataDoacao").ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<DoacaoDTO> pageResult = new PageImpl<>(List.of(new DoacaoDTO()), pageable, 1);
 
-        when(doacaoService.buscarTodas(ano, mes, meio, PageRequest.of(page, size)))
+        when(doacaoService.buscarTodas(ano, mes, meio, pageable))
                 .thenReturn(pageResult);
 
         ResponseEntity<Page<DoacaoDTO>> response = doacaoController.buscarTodas(page, size, ano, mes, meio);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(pageResult, response.getBody());
-        verify(doacaoService, times(1)).buscarTodas(ano, mes, meio, PageRequest.of(page, size));
+        verify(doacaoService, times(1)).buscarTodas(ano, mes, meio, pageable);
     }
 
     @Test

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
@@ -38,7 +39,7 @@ public class VoluntarioControllerTest {
         MockitoAnnotations.openMocks(this);
 
         uuid = UUID.randomUUID();
-        pageable = PageRequest.of(0, 10);
+        pageable = PageRequest.of(0, 10, Sort.by("criadoEm").ascending());
 
         EnderecoDTO enderecoDTO = EnderecoDTO.builder()
                 .logradouro("Rua Teste")
