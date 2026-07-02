@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -28,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @DisplayName("Testes de Integração - PrestacaoContasController")
 class PrestacaoContasControllerIntegrationTest {
+
+    private static final int SINGLE_ENTITY = 1;
 
     @Autowired
     private MockMvc mockMvc;
@@ -56,7 +59,7 @@ class PrestacaoContasControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve criar uma prestação de contas")
-    void testCriarPrestacaoIntegracao() throws Exception {
+    public void deveCriarPrestacao() throws Exception {
         mockMvc.perform(post("/sol-do-amanhecer/api/prestacao/criar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(prestacaoDTO)))
@@ -64,12 +67,12 @@ class PrestacaoContasControllerIntegrationTest {
                 .andExpect(jsonPath("$.descricaoGasto", equalTo("Compra de alimentos")))
                 .andExpect(jsonPath("$.valorPago", equalTo(500.00)));
 
-        assert prestacaoRepository.findAll().size() == 1;
+        assertEquals(SINGLE_ENTITY, prestacaoRepository.findAll().size(), "Deve haver exatamente uma prestação de contas no banco");
     }
 
     @Test
     @DisplayName("Deve buscar prestação por ID")
-    void testBuscarPrestacaoPorIdIntegracao() throws Exception {
+    public void deveBuscarPrestacaoPorId() throws Exception {
         PrestacaoContas prestacao = prestacaoRepository.save(PrestacaoContas.builder()
                 .dataTransacao(LocalDate.now())
                 .descricaoGasto("Gasto teste")
@@ -86,7 +89,7 @@ class PrestacaoContasControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve listar prestações com paginação")
-    void testListarPrestacoeIntegracao() throws Exception {
+    public void deveListarPrestacoes() throws Exception {
         prestacaoRepository.save(PrestacaoContas.builder()
                 .dataTransacao(LocalDate.now())
                 .descricaoGasto("Gasto 1")
@@ -112,7 +115,7 @@ class PrestacaoContasControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve atualizar uma prestação")
-    void testAtualizarPrestacaoIntegracao() throws Exception {
+    public void deveAtualizarPrestacao() throws Exception {
         PrestacaoContas prestacao = prestacaoRepository.save(PrestacaoContas.builder()
                 .dataTransacao(LocalDate.now())
                 .descricaoGasto("Gasto original")
@@ -135,12 +138,12 @@ class PrestacaoContasControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         PrestacaoContas prestacaoVerificada = prestacaoRepository.findById(prestacao.getUuid()).orElseThrow();
-        assert prestacaoVerificada.getDescricaoGasto().equals("Gasto atualizado");
+        assertEquals("Gasto atualizado", prestacaoVerificada.getDescricaoGasto(), "A descrição do gasto deve ter sido atualizada");
     }
 
     @Test
     @DisplayName("Deve deletar uma prestação")
-    void testDeletarPrestacaoIntegracao() throws Exception {
+    public void deveDeletarPrestacao() throws Exception {
         PrestacaoContas prestacao = prestacaoRepository.save(PrestacaoContas.builder()
                 .dataTransacao(LocalDate.now())
                 .descricaoGasto("Gasto para deletar")
@@ -152,6 +155,6 @@ class PrestacaoContasControllerIntegrationTest {
         mockMvc.perform(delete("/sol-do-amanhecer/api/prestacao/remover/" + prestacao.getUuid()))
                 .andExpect(status().isNoContent());
 
-        assert prestacaoRepository.findById(prestacao.getUuid()).isEmpty();
+        assertTrue(prestacaoRepository.findById(prestacao.getUuid()).isEmpty(), "A prestação deve ter sido removida do banco");
     }
 }

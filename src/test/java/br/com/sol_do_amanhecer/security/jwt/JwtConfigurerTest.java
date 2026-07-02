@@ -2,6 +2,7 @@ package br.com.sol_do_amanhecer.security.jwt;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -19,106 +20,134 @@ import static org.mockito.Mockito.*;
 @DisplayName("JwtConfigurer - Testes de Unidade")
 class JwtConfigurerTest {
 
+    private static final int DUAS_CONFIGURACOES = 2;
+    private static final int INDICE_PRIMEIRO_FILTRO = 0;
+    private static final int INDICE_SEGUNDO_FILTRO = 1;
+
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 
     @Mock
     private HttpSecurity httpSecurity;
 
-    private JwtConfigurer jwtConfigurer;
+    @Nested
+    @DisplayName("Verificação do filtro adicionado")
+    class VerificacaoDeFiltro {
 
-    @BeforeEach
-    void setUp() {
-        jwtConfigurer = new JwtConfigurer(jwtTokenProvider);
-    }
+        private JwtConfigurer jwtConfigurer;
 
-    @Test
-    @DisplayName("Deve configurar HttpSecurity com JwtTokenFilter antes do UsernamePasswordAuthenticationFilter")
-    void deveConfigurarHttpSecurityComJwtTokenFilter() {
-        when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
-                .thenReturn(httpSecurity);
+        @BeforeEach
+        void setUp() {
+            jwtConfigurer = new JwtConfigurer(jwtTokenProvider);
+        }
 
-        jwtConfigurer.configure(httpSecurity);
+        @Test
+        @DisplayName("Deve configurar HttpSecurity com JwtTokenFilter antes do UsernamePasswordAuthenticationFilter")
+        public void deveConfigurarHttpSecurityComJwtTokenFilter() {
+            when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
+                    .thenReturn(httpSecurity);
 
-        ArgumentCaptor<JwtTokenFilter> filterCaptor = ArgumentCaptor.forClass(JwtTokenFilter.class);
-        verify(httpSecurity).addFilterBefore(filterCaptor.capture(), eq(UsernamePasswordAuthenticationFilter.class));
+            jwtConfigurer.configure(httpSecurity);
 
-        JwtTokenFilter capturedFilter = filterCaptor.getValue();
-        assertNotNull(capturedFilter);
+            ArgumentCaptor<JwtTokenFilter> filterCaptor = ArgumentCaptor.forClass(JwtTokenFilter.class);
+            verify(httpSecurity).addFilterBefore(filterCaptor.capture(), eq(UsernamePasswordAuthenticationFilter.class));
 
-        assertDoesNotThrow(() -> new JwtTokenFilter(jwtTokenProvider));
-    }
+            assertNotNull(filterCaptor.getValue());
+            assertDoesNotThrow(() -> new JwtTokenFilter(jwtTokenProvider));
+        }
 
-    @Test
-    @DisplayName("Deve criar nova instância de JwtTokenFilter a cada configuração")
-    void deveCriarNovaInstanciaDeJwtTokenFilterACadaConfiguracao() {
-        when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
-                .thenReturn(httpSecurity);
+        @Test
+        @DisplayName("Deve adicionar filtro na posição correta da cadeia de filtros")
+        public void deveAdicionarFiltroNaPosicaoCorretaDaCadeiaDefiltros() {
+            when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
+                    .thenReturn(httpSecurity);
 
-        jwtConfigurer.configure(httpSecurity);
-        jwtConfigurer.configure(httpSecurity);
-
-        ArgumentCaptor<JwtTokenFilter> filterCaptor = ArgumentCaptor.forClass(JwtTokenFilter.class);
-        verify(httpSecurity, times(2)).addFilterBefore(filterCaptor.capture(), eq(UsernamePasswordAuthenticationFilter.class));
-
-        assertEquals(2, filterCaptor.getAllValues().size());
-        assertNotSame(filterCaptor.getAllValues().get(0), filterCaptor.getAllValues().get(1));
-    }
-
-    @Test
-    @DisplayName("Deve usar o mesmo JwtTokenProvider em todas as configurações")
-    void deveUsarOMesmoJwtTokenProviderEmTodasAsConfiguracoes() {
-        when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
-                .thenReturn(httpSecurity);
-
-        jwtConfigurer.configure(httpSecurity);
-
-        ArgumentCaptor<JwtTokenFilter> filterCaptor = ArgumentCaptor.forClass(JwtTokenFilter.class);
-        verify(httpSecurity).addFilterBefore(filterCaptor.capture(), eq(UsernamePasswordAuthenticationFilter.class));
-
-        assertNotNull(filterCaptor.getValue());
-    }
-
-    @Test
-    @DisplayName("Deve manter referência ao JwtTokenProvider fornecido no construtor")
-    void deveManterReferenciaAoJwtTokenProviderFornecidoNoconstrutor() {
-        JwtConfigurer configurer = new JwtConfigurer(jwtTokenProvider);
-
-        assertNotNull(configurer);
-
-        when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
-                .thenReturn(httpSecurity);
-
-        assertDoesNotThrow(() -> configurer.configure(httpSecurity));
-    }
-
-    @Test
-    @DisplayName("Deve funcionar com JwtTokenProvider nulo (se permitido pela implementação)")
-    void deveFuncionarComJwtTokenProviderNulo() {
-        JwtConfigurer configurerComProviderNulo = new JwtConfigurer(null);
-        when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
-                .thenReturn(httpSecurity);
-
-        try {
-            configurerComProviderNulo.configure(httpSecurity);
+            assertDoesNotThrow(() -> jwtConfigurer.configure(httpSecurity));
 
             verify(httpSecurity).addFilterBefore(any(JwtTokenFilter.class), eq(UsernamePasswordAuthenticationFilter.class));
-        } catch (Exception e) {
-            assertTrue(e instanceof NullPointerException || e instanceof IllegalArgumentException,
-                    "Exceção deve ser NullPointerException ou IllegalArgumentException, mas foi: " + e.getClass().getSimpleName());
+            verify(httpSecurity, never()).addFilterAfter(any(), any());
+            verify(httpSecurity, never()).addFilter(any());
         }
     }
 
-    @Test
-    @DisplayName("Deve adicionar filtro na posição correta da cadeia de filtros")
-    void deveAdicionarFiltroNaPosicaoCorretaDaCadeiaDefiltros() {
-        when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
-                .thenReturn(httpSecurity);
+    @Nested
+    @DisplayName("Instâncias de JwtTokenFilter por chamada")
+    class InstanciasMultiplas {
 
-        jwtConfigurer.configure(httpSecurity);
+        private JwtConfigurer jwtConfigurer;
 
-        verify(httpSecurity).addFilterBefore(any(JwtTokenFilter.class), eq(UsernamePasswordAuthenticationFilter.class));
-        verify(httpSecurity, never()).addFilterAfter(any(), any());
-        verify(httpSecurity, never()).addFilter(any());
+        @BeforeEach
+        void setUp() {
+            jwtConfigurer = new JwtConfigurer(jwtTokenProvider);
+        }
+
+        @Test
+        @DisplayName("Deve criar nova instância de JwtTokenFilter a cada configuração")
+        public void deveCriarNovaInstanciaDeJwtTokenFilterACadaConfiguracao() {
+            when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
+                    .thenReturn(httpSecurity);
+
+            jwtConfigurer.configure(httpSecurity);
+            jwtConfigurer.configure(httpSecurity);
+
+            ArgumentCaptor<JwtTokenFilter> filterCaptor = ArgumentCaptor.forClass(JwtTokenFilter.class);
+            verify(httpSecurity, times(2)).addFilterBefore(filterCaptor.capture(), eq(UsernamePasswordAuthenticationFilter.class));
+
+            assertEquals(DUAS_CONFIGURACOES, filterCaptor.getAllValues().size(),
+                    "Devem haver exatamente duas instâncias de filtro capturadas");
+            assertNotSame(filterCaptor.getAllValues().get(INDICE_PRIMEIRO_FILTRO),
+                    filterCaptor.getAllValues().get(INDICE_SEGUNDO_FILTRO),
+                    "Cada chamada deve criar uma nova instância de JwtTokenFilter");
+        }
+
+        @Test
+        @DisplayName("Deve usar o mesmo JwtTokenProvider em todas as configurações")
+        public void deveUsarOMesmoJwtTokenProviderEmTodasAsConfiguracoes() {
+            when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
+                    .thenReturn(httpSecurity);
+
+            jwtConfigurer.configure(httpSecurity);
+
+            ArgumentCaptor<JwtTokenFilter> filterCaptor = ArgumentCaptor.forClass(JwtTokenFilter.class);
+            verify(httpSecurity).addFilterBefore(filterCaptor.capture(), eq(UsernamePasswordAuthenticationFilter.class));
+
+            assertNotNull(filterCaptor.getValue());
+        }
+    }
+
+    @Nested
+    @DisplayName("Manutenção da referência ao provider")
+    class ManutencaoDeReferencia {
+
+        @Test
+        @DisplayName("Deve manter referência ao JwtTokenProvider fornecido no construtor")
+        public void deveManterReferenciaAoJwtTokenProviderFornecidoNoconstrutor() {
+            JwtConfigurer configurer = new JwtConfigurer(jwtTokenProvider);
+
+            assertNotNull(configurer);
+
+            when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
+                    .thenReturn(httpSecurity);
+
+            assertDoesNotThrow(() -> configurer.configure(httpSecurity));
+        }
+    }
+
+    @Nested
+    @DisplayName("Comportamento com provider nulo")
+    class ComProviderNulo {
+
+        @Test
+        @DisplayName("Deve funcionar com JwtTokenProvider nulo (se permitido pela implementação)")
+        public void deveFuncionarComJwtTokenProviderNulo() {
+            JwtConfigurer configurerComProviderNulo = new JwtConfigurer(null);
+            when(httpSecurity.addFilterBefore(any(), eq(UsernamePasswordAuthenticationFilter.class)))
+                    .thenReturn(httpSecurity);
+
+            assertDoesNotThrow(() -> configurerComProviderNulo.configure(httpSecurity),
+                    "JwtConfigurer com provider nulo não deve lançar exceção no ambiente de teste com mock");
+
+            verify(httpSecurity).addFilterBefore(any(JwtTokenFilter.class), eq(UsernamePasswordAuthenticationFilter.class));
+        }
     }
 }

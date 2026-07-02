@@ -398,4 +398,113 @@ class VoluntarioServiceImplTest {
             assertThat(resultado.getContent().get(0).getUsuarioDTO()).isNull();
         }
     }
+
+    @Nested
+    @DisplayName("Atualizar Status de Aprovação")
+    class AtualizarStatusAprovacao {
+
+        @Test
+        @DisplayName("Deve aprovar voluntário com sucesso e enviar email de aprovação")
+        void deveAprovarVoluntarioComSucesso() {
+            Email emailEntity = new Email();
+            emailEntity.setEmail("joao@email.com");
+
+            when(voluntarioRepository.findById(voluntarioId)).thenReturn(Optional.of(voluntario));
+            when(emailRepository.findFirstByVoluntarioUuid(voluntarioId)).thenReturn(Optional.of(emailEntity));
+
+            voluntarioService.atualizarStatusAprovacao(voluntarioId, true);
+
+            assertThat(voluntario.getAprovado()).isTrue();
+            assertThat(voluntario.getAtivo()).isTrue();
+            verify(voluntarioRepository).save(voluntario);
+            verify(emailUtil).enviarEmail(eq("joao@email.com"), anyString(), anyString());
+        }
+
+        @Test
+        @DisplayName("Deve reprovar voluntário com sucesso e enviar email de reprovação")
+        void deveReprovarVoluntarioComSucesso() {
+            Email emailEntity = new Email();
+            emailEntity.setEmail("joao@email.com");
+
+            when(voluntarioRepository.findById(voluntarioId)).thenReturn(Optional.of(voluntario));
+            when(emailRepository.findFirstByVoluntarioUuid(voluntarioId)).thenReturn(Optional.of(emailEntity));
+
+            voluntarioService.atualizarStatusAprovacao(voluntarioId, false);
+
+            assertThat(voluntario.getAprovado()).isFalse();
+            assertThat(voluntario.getAtivo()).isFalse();
+            verify(voluntarioRepository).save(voluntario);
+            verify(emailUtil).enviarEmail(eq("joao@email.com"), anyString(), anyString());
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando voluntário não existe ao atualizar status")
+        void deveLancarExcecaoQuandoVoluntarioNaoExiste() {
+            when(voluntarioRepository.findById(voluntarioId)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> voluntarioService.atualizarStatusAprovacao(voluntarioId, true))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("Voluntário não encontrado com ID: " + voluntarioId);
+
+            verify(voluntarioRepository, never()).save(any());
+            verify(emailUtil, never()).enviarEmail(any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("Deve salvar voluntário mas não enviar email quando email não encontrado")
+        void deveSalvarSemEnviarEmailQuandoEmailNaoEncontrado() {
+            when(voluntarioRepository.findById(voluntarioId)).thenReturn(Optional.of(voluntario));
+            when(emailRepository.findFirstByVoluntarioUuid(voluntarioId)).thenReturn(Optional.empty());
+
+            voluntarioService.atualizarStatusAprovacao(voluntarioId, true);
+
+            verify(voluntarioRepository).save(voluntario);
+            verify(emailUtil, never()).enviarEmail(any(), any(), any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Buscar Novos Voluntários")
+    class BuscarNovosVoluntarios {
+
+        @Test
+        @DisplayName("Deve buscar novos voluntários com formulário presente")
+        void deveBuscarNovosVoluntariosComFormulario() {
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<Voluntario> page = new PageImpl<>(Collections.singletonList(voluntario), pageable, 1);
+            FormularioVoluntario formulario = new FormularioVoluntario();
+
+            when(voluntarioRepository.findByAprovadoIsNull(pageable)).thenReturn(page);
+            when(emailRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
+            when(telefoneRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
+            when(formularioVoluntarioRepository.findByVoluntario(any(Voluntario.class)))
+                    .thenReturn(Optional.of(formulario));
+
+            Page<VoluntarioResponseDTO> resultado = voluntarioService.buscarNovos(pageable);
+
+            assertThat(resultado).isNotNull();
+            assertThat(resultado.getContent()).hasSize(1);
+            assertThat(resultado.getContent().get(0).getFormularioDTO()).isNotNull();
+            verify(voluntarioRepository).findByAprovadoIsNull(pageable);
+        }
+
+        @Test
+        @DisplayName("Deve buscar novos voluntários sem formulário e não preencher formularioDTO")
+        void deveBuscarNovosVoluntariosSemFormulario() {
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<Voluntario> page = new PageImpl<>(Collections.singletonList(voluntario), pageable, 1);
+
+            when(voluntarioRepository.findByAprovadoIsNull(pageable)).thenReturn(page);
+            when(emailRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
+            when(telefoneRepository.findByVoluntario(any(Voluntario.class))).thenReturn(new ArrayList<>());
+            when(formularioVoluntarioRepository.findByVoluntario(any(Voluntario.class)))
+                    .thenReturn(Optional.empty());
+
+            Page<VoluntarioResponseDTO> resultado = voluntarioService.buscarNovos(pageable);
+
+            assertThat(resultado).isNotNull();
+            assertThat(resultado.getContent().get(0).getFormularioDTO()).isNull();
+            verify(voluntarioRepository).findByAprovadoIsNull(pageable);
+        }
+    }
 }

@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -29,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @DisplayName("Testes de Integração - VoluntarioController")
 class VoluntarioControllerIntegrationTest {
+
+    private static final int SINGLE_ENTITY = 1;
 
     @Autowired
     private MockMvc mockMvc;
@@ -108,46 +111,19 @@ class VoluntarioControllerIntegrationTest {
                 .build();
     }
 
-    @Test
-    @DisplayName("Deve criar voluntário com todos os dados relacionados")
-    void testCriarVoluntarioIntegracao() throws Exception {
-        mockMvc.perform(post("/sol-do-amanhecer/api/voluntario/criar")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(voluntarioRequestDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nomeCompleto", equalTo("João Silva")))
-                .andExpect(jsonPath("$.ativo", equalTo(false)));
-
-        assert voluntarioRepository.findAll().size() == 1;
-        assert emailRepository.findAll().size() == 1;
-        assert telefoneRepository.findAll().size() == 1;
-        assert formularioRepository.findAll().size() == 1;
+    private Endereco criarEndereco(String logradouro, String numero, String bairro,
+                                   String cidade, String estado, String cep) {
+        return enderecoRepository.save(Endereco.builder()
+                .logradouro(logradouro)
+                .numero(numero)
+                .bairro(bairro)
+                .cidade(cidade)
+                .estado(estado)
+                .cep(cep)
+                .build());
     }
 
-    @Test
-    @DisplayName("Deve buscar voluntário por ID com todos os dados")
-    void testBuscarVoluntarioPorIdIntegracao() throws Exception {
-        Endereco endereco = enderecoRepository.save(Endereco.builder()
-                .logradouro("Rua Teste")
-                .numero("123")
-                .bairro("Centro")
-                .cidade("São Paulo")
-                .estado("SP")
-                .cep("01310100")
-                .build());
-
-        Voluntario voluntario = voluntarioRepository.save(Voluntario.builder()
-                .nomeCompleto("Maria Santos")
-                .dataNascimento(LocalDate.of(1995, 5, 15))
-                .endereco(endereco)
-                .ativo(true)
-                .build());
-
-        emailRepository.save(Email.builder()
-                .email("maria@email.com")
-                .voluntario(voluntario)
-                .build());
-
+    private void salvarFormulario(Voluntario voluntario) {
         formularioRepository.save(FormularioVoluntario.builder()
                 .voluntario(voluntario)
                 .comoConheceu("Internet")
@@ -161,6 +137,67 @@ class VoluntarioControllerIntegrationTest {
                 .sobreMim("Dedicado")
                 .dataResposta(LocalDateTime.now())
                 .build());
+    }
+
+    private FormularioVoluntarioDTO buildFormularioDTO() {
+        return FormularioVoluntarioDTO.builder()
+                .comoConheceu("Internet")
+                .motivoVoluntariado("Ajudar")
+                .cienteTrabalhoVoluntario(true)
+                .dedicacaoVoluntariado(true)
+                .disponibilidadeSemana("Fins de semana")
+                .compromissoDivulgar(true)
+                .compromissoAcao(true)
+                .desejaCamisa(false)
+                .sobreMim("Dedicado")
+                .dataResposta(LocalDateTime.now())
+                .build();
+    }
+
+    private VoluntarioRequestDTO criarRequestAtualizacao(String novoNome) {
+        return VoluntarioRequestDTO.builder()
+                .voluntarioDTO(VoluntarioDTO.builder()
+                        .nomeCompleto(novoNome)
+                        .dataNascimento(LocalDate.of(1990, 1, 1))
+                        .enderecoDTO(enderecoDTO)
+                        .ativo(true)
+                        .build())
+                .emailDTOList(List.of())
+                .telefoneDTOList(List.of())
+                .formularioDTO(buildFormularioDTO())
+                .build();
+    }
+
+    @Test
+    @DisplayName("Deve criar voluntário com todos os dados relacionados")
+    public void devePersistirTodosDadosAoCriarVoluntario() throws Exception {
+        mockMvc.perform(post("/sol-do-amanhecer/api/voluntario/criar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(voluntarioRequestDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nomeCompleto", equalTo("João Silva")))
+                .andExpect(jsonPath("$.ativo", equalTo(false)));
+
+        assertEquals(SINGLE_ENTITY, voluntarioRepository.findAll().size(), "O voluntário deve ter sido persistido");
+        assertEquals(SINGLE_ENTITY, emailRepository.findAll().size(), "O e-mail deve ter sido persistido");
+        assertEquals(SINGLE_ENTITY, telefoneRepository.findAll().size(), "O telefone deve ter sido persistido");
+        assertEquals(SINGLE_ENTITY, formularioRepository.findAll().size(), "O formulário deve ter sido persistido");
+    }
+
+    @Test
+    @DisplayName("Deve buscar voluntário por ID com todos os dados")
+    public void deveBuscarVoluntarioPorIdComDadosRelacionados() throws Exception {
+        Endereco endereco = criarEndereco("Rua Teste", "123", "Centro", "São Paulo", "SP", "01310100");
+
+        Voluntario voluntario = voluntarioRepository.save(Voluntario.builder()
+                .nomeCompleto("Maria Santos")
+                .dataNascimento(LocalDate.of(1995, 5, 15))
+                .endereco(endereco)
+                .ativo(true)
+                .build());
+
+        emailRepository.save(Email.builder().email("maria@email.com").voluntario(voluntario).build());
+        salvarFormulario(voluntario);
 
         mockMvc.perform(get("/sol-do-amanhecer/api/voluntario/" + voluntario.getUuid()))
                 .andExpect(status().isOk())
@@ -171,31 +208,16 @@ class VoluntarioControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve listar voluntários com paginação")
-    void testListarVoluntariosComPaginacao() throws Exception {
-        Endereco endereco = enderecoRepository.save(Endereco.builder()
-                .logradouro("Rua")
-                .numero("1")
-                .bairro("Centro")
-                .cidade("SP")
-                .estado("SP")
-                .cep("01310100")
-                .build());
+    public void deveListarVoluntariosPaginados() throws Exception {
+        Endereco endereco1 = criarEndereco("Rua", "1", "Centro", "SP", "SP", "01310100");
+        Endereco endereco2 = criarEndereco("Rua 2", "2", "Centro", "SP", "SP", "01310101");
 
         voluntarioRepository.save(Voluntario.builder()
                 .nomeCompleto("Voluntário 1")
                 .dataNascimento(LocalDate.now())
-                .endereco(endereco)
+                .endereco(endereco1)
                 .ativo(true)
                 .aprovado(true)
-                .build());
-
-        Endereco endereco2 = enderecoRepository.save(Endereco.builder()
-                .logradouro("Rua 2")
-                .numero("2")
-                .bairro("Centro")
-                .cidade("SP")
-                .estado("SP")
-                .cep("01310101")
                 .build());
 
         voluntarioRepository.save(Voluntario.builder()
@@ -215,15 +237,8 @@ class VoluntarioControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve atualizar voluntário")
-    void testAtualizarVoluntarioIntegracao() throws Exception {
-        Endereco endereco = enderecoRepository.save(Endereco.builder()
-                .logradouro("Rua Original")
-                .numero("1")
-                .bairro("Centro")
-                .cidade("SP")
-                .estado("SP")
-                .cep("01310100")
-                .build());
+    public void deveAtualizarVoluntarioExistente() throws Exception {
+        Endereco endereco = criarEndereco("Rua Original", "1", "Centro", "SP", "SP", "01310100");
 
         Voluntario voluntario = voluntarioRepository.save(Voluntario.builder()
                 .nomeCompleto("Nome Original")
@@ -232,44 +247,9 @@ class VoluntarioControllerIntegrationTest {
                 .ativo(true)
                 .build());
 
-        formularioRepository.save(FormularioVoluntario.builder()
-                .voluntario(voluntario)
-                .comoConheceu("Internet")
-                .motivoVoluntariado("Ajudar")
-                .cienteTrabalhoVoluntario(true)
-                .dedicacaoVoluntariado(true)
-                .disponibilidadeSemana("Fins de semana")
-                .compromissoDivulgar(true)
-                .compromissoAcao(true)
-                .desejaCamisa(false)
-                .sobreMim("Dedicado")
-                .dataResposta(LocalDateTime.now())
-                .build());
+        salvarFormulario(voluntario);
 
-        VoluntarioDTO voluntarioAtualizado = VoluntarioDTO.builder()
-                .nomeCompleto("Nome Atualizado")
-                .dataNascimento(LocalDate.of(1990, 1, 1))
-                .enderecoDTO(enderecoDTO)
-                .ativo(true)
-                .build();
-
-        VoluntarioRequestDTO requestAtualizado = VoluntarioRequestDTO.builder()
-                .voluntarioDTO(voluntarioAtualizado)
-                .emailDTOList(List.of())
-                .telefoneDTOList(List.of())
-                .formularioDTO(FormularioVoluntarioDTO.builder()
-                        .comoConheceu("Internet")
-                        .motivoVoluntariado("Ajudar")
-                        .cienteTrabalhoVoluntario(true)
-                        .dedicacaoVoluntariado(true)
-                        .disponibilidadeSemana("Fins de semana")
-                        .compromissoDivulgar(true)
-                        .compromissoAcao(true)
-                        .desejaCamisa(false)
-                        .sobreMim("Dedicado")
-                        .dataResposta(LocalDateTime.now())
-                        .build())
-                .build();
+        VoluntarioRequestDTO requestAtualizado = criarRequestAtualizacao("Nome Atualizado");
 
         mockMvc.perform(put("/sol-do-amanhecer/api/voluntario/atualizar/" + voluntario.getUuid())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -277,20 +257,14 @@ class VoluntarioControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         Voluntario voluntarioVerificado = voluntarioRepository.findById(voluntario.getUuid()).orElseThrow();
-        assert voluntarioVerificado.getNomeCompleto().equals("Nome Atualizado");
+        assertEquals("Nome Atualizado", voluntarioVerificado.getNomeCompleto(),
+                "O nome do voluntário deve ter sido atualizado");
     }
 
     @Test
     @DisplayName("Deve deletar voluntário")
-    void testDeletarVoluntarioIntegracao() throws Exception {
-        Endereco endereco = enderecoRepository.save(Endereco.builder()
-                .logradouro("Rua")
-                .numero("1")
-                .bairro("Centro")
-                .cidade("SP")
-                .estado("SP")
-                .cep("01310100")
-                .build());
+    public void deveDesativarVoluntarioPorId() throws Exception {
+        Endereco endereco = criarEndereco("Rua", "1", "Centro", "SP", "SP", "01310100");
 
         Voluntario voluntario = voluntarioRepository.save(Voluntario.builder()
                 .nomeCompleto("Para deletar")
@@ -303,20 +277,13 @@ class VoluntarioControllerIntegrationTest {
                 .andExpect(status().isNoContent());
 
         Voluntario voluntarioVerificado = voluntarioRepository.findById(voluntario.getUuid()).orElseThrow();
-        assert !voluntarioVerificado.getAtivo();
+        assertFalse(voluntarioVerificado.getAtivo(), "O voluntário deve estar inativo após remoção");
     }
 
     @Test
     @DisplayName("Deve atualizar status de aprovação do voluntário")
-    void testAtualizarStatusAprovacaoIntegracao() throws Exception {
-        Endereco endereco = enderecoRepository.save(Endereco.builder()
-                .logradouro("Rua")
-                .numero("1")
-                .bairro("Centro")
-                .cidade("SP")
-                .estado("SP")
-                .cep("01310100")
-                .build());
+    public void deveAprovarVoluntario() throws Exception {
+        Endereco endereco = criarEndereco("Rua", "1", "Centro", "SP", "SP", "01310100");
 
         Voluntario voluntario = voluntarioRepository.save(Voluntario.builder()
                 .nomeCompleto("Voluntário Pendente")
@@ -341,30 +308,15 @@ class VoluntarioControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         Voluntario voluntarioVerificado = voluntarioRepository.findById(voluntario.getUuid()).orElseThrow();
-        assert voluntarioVerificado.getAprovado().equals(true);
-        assert voluntarioVerificado.getAtivo().equals(true);
+        assertEquals(true, voluntarioVerificado.getAprovado(), "O voluntário deve estar aprovado");
+        assertEquals(true, voluntarioVerificado.getAtivo(), "O voluntário deve estar ativo após aprovação");
     }
 
     @Test
     @DisplayName("Deve listar novos voluntários (status pendente)")
-    void testListarNovosVoluntariosIntegracao() throws Exception {
-        Endereco endereco1 = enderecoRepository.save(Endereco.builder()
-                .logradouro("Rua")
-                .numero("1")
-                .bairro("Centro")
-                .cidade("SP")
-                .estado("SP")
-                .cep("01310100")
-                .build());
-
-        Endereco endereco2 = enderecoRepository.save(Endereco.builder()
-                .logradouro("Rua 2")
-                .numero("2")
-                .bairro("Centro")
-                .cidade("SP")
-                .estado("SP")
-                .cep("01310101")
-                .build());
+    public void deveListarVoluntariosPendentes() throws Exception {
+        Endereco endereco1 = criarEndereco("Rua", "1", "Centro", "SP", "SP", "01310100");
+        Endereco endereco2 = criarEndereco("Rua 2", "2", "Centro", "SP", "SP", "01310101");
 
         voluntarioRepository.save(Voluntario.builder()
                 .nomeCompleto("Novo Voluntário 1")

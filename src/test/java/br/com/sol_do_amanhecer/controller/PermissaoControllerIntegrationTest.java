@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,6 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @DisplayName("Testes de Integração - PermissaoController")
 class PermissaoControllerIntegrationTest {
+
+    private static final int SINGLE_ENTITY = 1;
 
     @Autowired
     private MockMvc mockMvc;
@@ -42,7 +45,7 @@ class PermissaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve criar uma permissão")
-    void testCriarPermissaoIntegracao() throws Exception {
+    public void devePersistirPermissaoAoCriar() throws Exception {
         PermissaoDTO permissaoDTO = PermissaoDTO.builder()
                 .descricao("ROLE_ADMIN")
                 .build();
@@ -53,12 +56,12 @@ class PermissaoControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.descricao", equalTo("ROLE_ADMIN")));
 
-        assert permissaoRepository.findAll().size() == 1;
+        assertEquals(SINGLE_ENTITY, permissaoRepository.findAll().size(), "A permissão deve ter sido persistida no banco");
     }
 
     @Test
     @DisplayName("Deve buscar permissão por ID")
-    void testBuscarPermissaoPorIdIntegracao() throws Exception {
+    public void deveBuscarPermissaoPorId() throws Exception {
         Permissao permissaoCriada = permissaoRepository.save(new Permissao(null, "ROLE_USER"));
 
         mockMvc.perform(get("/sol-do-amanhecer/api/permissao/" + permissaoCriada.getUuid()))
@@ -68,7 +71,7 @@ class PermissaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve listar todas as permissões")
-    void testListarPermissoesIntegracao() throws Exception {
+    public void deveListarTodasPermissoes() throws Exception {
         permissaoRepository.save(new Permissao(null, "ROLE_ADMIN"));
         permissaoRepository.save(new Permissao(null, "ROLE_USER"));
 
@@ -79,7 +82,7 @@ class PermissaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve atualizar uma permissão")
-    void testAtualizarPermissaoIntegracao() throws Exception {
+    public void deveAtualizarPermissaoExistente() throws Exception {
         Permissao permissaoCriada = permissaoRepository.save(new Permissao(null, "ROLE_OLD"));
 
         PermissaoDTO permissaoAtualizada = PermissaoDTO.builder()
@@ -92,17 +95,18 @@ class PermissaoControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         Permissao permissaoVerificada = permissaoRepository.findById(permissaoCriada.getUuid()).orElseThrow();
-        assert permissaoVerificada.getDescricao().equals("ROLE_NEW");
+        assertEquals("ROLE_NEW", permissaoVerificada.getDescricao(), "A descrição da permissão deve ter sido atualizada");
     }
 
     @Test
     @DisplayName("Deve deletar uma permissão")
-    void testDeletarPermissaoIntegracao() throws Exception {
+    public void deveDeletarPermissaoPorId() throws Exception {
         Permissao permissaoCriada = permissaoRepository.save(new Permissao(null, "ROLE_DELETE"));
 
         mockMvc.perform(delete("/sol-do-amanhecer/api/permissao/remover/" + permissaoCriada.getUuid()))
                 .andExpect(status().isNoContent());
 
-        assert permissaoRepository.findById(permissaoCriada.getUuid()).isEmpty();
+        assertTrue(permissaoRepository.findById(permissaoCriada.getUuid()).isEmpty(),
+                "A permissão deve ter sido removida do banco");
     }
 }

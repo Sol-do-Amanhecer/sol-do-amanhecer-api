@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -29,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @DisplayName("Testes de Integração - DoacaoController")
 class DoacaoControllerIntegrationTest {
+
+    private static final int SINGLE_ENTITY = 1;
 
     @Autowired
     private MockMvc mockMvc;
@@ -55,7 +58,7 @@ class DoacaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve criar uma doação e persistir no banco")
-    void testCriarDoacaoIntegracao() throws Exception {
+    public void devePersistirDoacaoAoCriar() throws Exception {
         mockMvc.perform(post("/sol-do-amanhecer/api/doacao/criar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(doacaoDTO)))
@@ -64,12 +67,12 @@ class DoacaoControllerIntegrationTest {
                 .andExpect(jsonPath("$.meioDoacao", equalTo("PIX")))
                 .andExpect(jsonPath("$.valor", equalTo(100.00)));
 
-        assert doacaoRepository.findAll().size() == 1;
+        assertEquals(SINGLE_ENTITY, doacaoRepository.findAll().size(), "A doação deve ter sido persistida no banco");
     }
 
     @Test
     @DisplayName("Deve buscar doação por ID")
-    void testBuscarDoacaoPorIdIntegracao() throws Exception {
+    public void deveBuscarDoacaoPorId() throws Exception {
         Doacao doacaoCriada = doacaoRepository.save(Doacao.builder()
                 .dataDoacao(LocalDate.now())
                 .nomeDoador("Maria Santos")
@@ -85,7 +88,7 @@ class DoacaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve listar doações com paginação")
-    void testListarDoacoesComPaginacao() throws Exception {
+    public void deveListarDoacoesPaginadas() throws Exception {
         doacaoRepository.save(Doacao.builder()
                 .dataDoacao(LocalDate.now())
                 .nomeDoador("Doador 1")
@@ -110,7 +113,7 @@ class DoacaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve filtrar doações por meio de doação")
-    void testFiltrarDoacoesPorMeio() throws Exception {
+    public void deveFiltrarDoacoesPorMeioDoacao() throws Exception {
         doacaoRepository.save(Doacao.builder()
                 .dataDoacao(LocalDate.now())
                 .nomeDoador("Doador PIX")
@@ -136,7 +139,7 @@ class DoacaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve atualizar uma doação")
-    void testAtualizarDoacaoIntegracao() throws Exception {
+    public void deveAtualizarDoacaoExistente() throws Exception {
         Doacao doacaoCriada = doacaoRepository.save(Doacao.builder()
                 .dataDoacao(LocalDate.now())
                 .nomeDoador("Doador Original")
@@ -157,12 +160,12 @@ class DoacaoControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         Doacao doacaoVerificada = doacaoRepository.findById(doacaoCriada.getUuid()).orElseThrow();
-        assert doacaoVerificada.getNomeDoador().equals("Doador Atualizado");
+        assertEquals("Doador Atualizado", doacaoVerificada.getNomeDoador(), "O nome do doador deve ter sido atualizado");
     }
 
     @Test
     @DisplayName("Deve deletar uma doação")
-    void testDeletarDoacaoIntegracao() throws Exception {
+    public void deveDeletarDoacaoPorId() throws Exception {
         Doacao doacaoCriada = doacaoRepository.save(Doacao.builder()
                 .dataDoacao(LocalDate.now())
                 .nomeDoador("Doador para deletar")
@@ -173,6 +176,7 @@ class DoacaoControllerIntegrationTest {
         mockMvc.perform(delete("/sol-do-amanhecer/api/doacao/remover/" + doacaoCriada.getUuid()))
                 .andExpect(status().isNoContent());
 
-        assert doacaoRepository.findById(doacaoCriada.getUuid()).isEmpty();
+        assertTrue(doacaoRepository.findById(doacaoCriada.getUuid()).isEmpty(),
+                "A doação deve ter sido removida do banco");
     }
 }

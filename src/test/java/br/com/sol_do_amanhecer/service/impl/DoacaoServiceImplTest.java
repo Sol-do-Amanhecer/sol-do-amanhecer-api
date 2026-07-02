@@ -67,7 +67,7 @@ class DoacaoServiceImplTest {
     class CriarDoacao {
         @Test
         @DisplayName("Deve criar doação com sucesso")
-        void testCriarDoacao() {
+        void deveCriarDoacao() {
             when(doacaoRepository.save(any(Doacao.class))).thenReturn(doacao);
 
             DoacaoDTO resultado = doacaoService.criar(doacaoDTO);
@@ -78,7 +78,7 @@ class DoacaoServiceImplTest {
 
         @Test
         @DisplayName("Deve criar doação com diferentes meios")
-        void testCriarDoacaoComDiferentesMeios() {
+        void deveCriarDoacaoComDiferentesMeios() {
             for (EMeioDoacao meio : EMeioDoacao.values()) {
                 DoacaoDTO dto = DoacaoDTO.builder()
                         .dataDoacao(LocalDate.now())
@@ -109,7 +109,7 @@ class DoacaoServiceImplTest {
     class AtualizarDoacao {
         @Test
         @DisplayName("Deve atualizar doação existente")
-        void testAtualizarDoacao() {
+        void deveAtualizarDoacao() {
             when(doacaoRepository.findById(doacaoId)).thenReturn(Optional.of(doacao));
             when(doacaoRepository.save(any(Doacao.class))).thenReturn(doacao);
 
@@ -121,7 +121,7 @@ class DoacaoServiceImplTest {
 
         @Test
         @DisplayName("Deve lançar exceção ao atualizar doação inexistente")
-        void testAtualizarDoacaoInexistente() {
+        void deveAtualizarDoacaoInexistente() {
             when(doacaoRepository.findById(doacaoId)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> doacaoService.atualizar(doacaoId, doacaoDTO))
@@ -135,7 +135,7 @@ class DoacaoServiceImplTest {
     class RemoverDoacao {
         @Test
         @DisplayName("Deve remover doação")
-        void testRemoverDoacao() {
+        void deveRemoverDoacao() {
             when(doacaoRepository.existsById(doacaoId)).thenReturn(true);
 
             doacaoService.remover(doacaoId);
@@ -145,7 +145,7 @@ class DoacaoServiceImplTest {
 
         @Test
         @DisplayName("Deve lançar exceção ao remover doação inexistente")
-        void testRemoverDoacaoInexistente() {
+        void deveRemoverDoacaoInexistente() {
             when(doacaoRepository.existsById(doacaoId)).thenReturn(false);
 
             assertThatThrownBy(() -> doacaoService.remover(doacaoId))
@@ -159,7 +159,7 @@ class DoacaoServiceImplTest {
     class BuscarDoacao {
         @Test
         @DisplayName("Deve buscar doação por ID")
-        void testBuscarDoacaoPorId() {
+        void deveBuscarDoacaoPorId() {
             when(doacaoRepository.findById(doacaoId)).thenReturn(Optional.of(doacao));
 
             DoacaoDTO resultado = doacaoService.buscarPorId(doacaoId);
@@ -170,7 +170,7 @@ class DoacaoServiceImplTest {
 
         @Test
         @DisplayName("Deve lançar exceção ao buscar doação inexistente")
-        void testBuscarDoacaoInexistente() {
+        void deveBuscarDoacaoInexistente() {
             when(doacaoRepository.findById(doacaoId)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> doacaoService.buscarPorId(doacaoId))
@@ -184,7 +184,7 @@ class DoacaoServiceImplTest {
     class ListarDoacoes {
         @Test
         @DisplayName("Deve buscar doações sem filtros")
-        void testBuscarDoacoesSemFiltros() {
+        void deveBuscarDoacoesSemFiltros() {
             Pageable pageable = PageRequest.of(0, 10);
             Page<Doacao> page = new PageImpl<>(List.of(doacao), pageable, 1);
 
@@ -199,7 +199,7 @@ class DoacaoServiceImplTest {
 
         @Test
         @DisplayName("Deve buscar doações filtradas por meio")
-        void testBuscarDoacoesFiltroMeio() {
+        void deveBuscarDoacoesFiltroMeio() {
             Pageable pageable = PageRequest.of(0, 10);
             Page<Doacao> page = new PageImpl<>(List.of(doacao), pageable, 1);
 
@@ -213,7 +213,7 @@ class DoacaoServiceImplTest {
 
         @Test
         @DisplayName("Deve buscar doações filtradas por período")
-        void testBuscarDoacoesFiltroPeríodo() {
+        void deveBuscarDoacoesFiltroPeríodo() {
             Pageable pageable = PageRequest.of(0, 10);
             Page<Doacao> page = new PageImpl<>(List.of(doacao), pageable, 1);
 
@@ -227,7 +227,7 @@ class DoacaoServiceImplTest {
 
         @Test
         @DisplayName("Deve buscar doações com múltiplos filtros")
-        void testBuscarDoacoesComMultiplosFiltros() {
+        void deveBuscarDoacoesComMultiplosFiltros() {
             Pageable pageable = PageRequest.of(0, 10);
             Page<Doacao> page = new PageImpl<>(List.of(doacao), pageable, 1);
 

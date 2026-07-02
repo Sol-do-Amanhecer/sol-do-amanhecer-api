@@ -2,7 +2,6 @@ package br.com.sol_do_amanhecer.controller;
 
 import br.com.sol_do_amanhecer.model.dto.AcaoDTO;
 import br.com.sol_do_amanhecer.model.dto.AcaoRequestDTO;
-import br.com.sol_do_amanhecer.model.dto.ImagemAcaoDTO;
 import br.com.sol_do_amanhecer.model.entity.Acao;
 import br.com.sol_do_amanhecer.repository.AcaoRepository;
 import br.com.sol_do_amanhecer.shared.enums.ETipoAcao;
@@ -22,6 +21,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @DisplayName("Testes de Integração - AcaoController")
 class AcaoControllerIntegrationTest {
+
+    private static final int SINGLE_ENTITY = 1;
 
     @Autowired
     private MockMvc mockMvc;
@@ -64,7 +66,7 @@ class AcaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve criar uma ação e persistir no banco de dados")
-    void testCriarAcaoIntegracao() throws Exception {
+    public void devePersistirAcaoAoCriar() throws Exception {
         mockMvc.perform(post("/sol-do-amanhecer/api/acao/criar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(acaoRequestDTO)))
@@ -72,12 +74,12 @@ class AcaoControllerIntegrationTest {
                 .andExpect(jsonPath("$.nome", equalTo("Ação de Caridade")))
                 .andExpect(jsonPath("$.tipo", equalTo("SOCIAL_ALIMENTAR")));
 
-        assert acaoRepository.findAll().size() == 1;
+        assertEquals(SINGLE_ENTITY, acaoRepository.findAll().size(), "A ação deve ter sido persistida no banco");
     }
 
     @Test
     @DisplayName("Deve buscar ação por ID após criação")
-    void testBuscarAcaoPorIdIntegracao() throws Exception {
+    public void deveBuscarAcaoPorId() throws Exception {
         Acao acaoCriada = acaoRepository.save(Acao.builder()
                 .nome("Ação Teste")
                 .descricao("Descrição teste")
@@ -94,7 +96,7 @@ class AcaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve listar todas as ações com paginação")
-    void testListarAcoesComPaginacao() throws Exception {
+    public void deveListarAcoesPaginadas() throws Exception {
         acaoRepository.save(Acao.builder()
                 .nome("Ação 1")
                 .descricao("Desc 1")
@@ -121,7 +123,7 @@ class AcaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve filtrar ações por tipo")
-    void testFiltrarAcoesPorTipo() throws Exception {
+    public void deveFiltrarAcoesPorTipo() throws Exception {
         acaoRepository.save(Acao.builder()
                 .nome("Ação Social")
                 .descricao("Desc")
@@ -149,7 +151,7 @@ class AcaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve atualizar uma ação existente")
-    void testAtualizarAcaoIntegracao() throws Exception {
+    public void deveAtualizarAcaoExistente() throws Exception {
         Acao acaoCriada = acaoRepository.save(Acao.builder()
                 .nome("Ação Original")
                 .descricao("Desc original")
@@ -177,12 +179,12 @@ class AcaoControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         Acao acaoVerificada = acaoRepository.findById(acaoCriada.getUuid()).orElseThrow();
-        assert acaoVerificada.getNome().equals("Ação Atualizada");
+        assertEquals("Ação Atualizada", acaoVerificada.getNome(), "O nome da ação deve ter sido atualizado");
     }
 
     @Test
     @DisplayName("Deve deletar uma ação existente")
-    void testDeletarAcaoIntegracao() throws Exception {
+    public void deveDeletarAcaoPorId() throws Exception {
         Acao acaoCriada = acaoRepository.save(Acao.builder()
                 .nome("Ação para deletar")
                 .descricao("Desc")
@@ -194,12 +196,13 @@ class AcaoControllerIntegrationTest {
         mockMvc.perform(delete("/sol-do-amanhecer/api/acao/remover/" + acaoCriada.getUuid()))
                 .andExpect(status().isNoContent());
 
-        assert acaoRepository.findById(acaoCriada.getUuid()).isEmpty();
+        assertTrue(acaoRepository.findById(acaoCriada.getUuid()).isEmpty(),
+                "A ação deve ter sido removida do banco");
     }
 
     @Test
     @DisplayName("Deve retornar 404 ao buscar ação inexistente")
-    void testBuscarAcaoInexistenteRetorna404() throws Exception {
+    public void deveRetornar404ParaAcaoInexistente() throws Exception {
         mockMvc.perform(get("/sol-do-amanhecer/api/acao/00000000-0000-0000-0000-000000000000"))
                 .andExpect(status().isNotFound());
     }

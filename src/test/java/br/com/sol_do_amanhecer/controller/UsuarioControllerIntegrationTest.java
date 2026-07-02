@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -36,6 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @DisplayName("Testes de Integração - UsuarioController")
 class UsuarioControllerIntegrationTest {
+
+    private static final int SINGLE_ENTITY = 1;
 
     @Autowired
     private MockMvc mockMvc;
@@ -98,9 +101,22 @@ class UsuarioControllerIntegrationTest {
                 .build();
     }
 
+    private Usuario criarUsuario(String nomeUsuario, Voluntario voluntarioAssociado) {
+        return usuarioRepository.save(Usuario.builder()
+                .usuario(nomeUsuario)
+                .senha(passwordEncoder.encode("senha123"))
+                .contaExpirada(false)
+                .contaBloqueada(false)
+                .credenciaisExpiradas(false)
+                .ativo(true)
+                .permissoes(new java.util.ArrayList<>(List.of(permissao)))
+                .voluntario(voluntarioAssociado)
+                .build());
+    }
+
     @Test
     @DisplayName("Deve criar um novo usuário")
-    void testCriarUsuarioIntegracao() throws Exception {
+    public void devePersistirUsuarioAoCriar() throws Exception {
         mockMvc.perform(post("/sol-do-amanhecer/api/usuario/criar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(usuarioDTO)))
@@ -108,22 +124,13 @@ class UsuarioControllerIntegrationTest {
                 .andExpect(jsonPath("$.usuario", equalTo("usuarioteste")))
                 .andExpect(jsonPath("$.ativo", equalTo(true)));
 
-        assert usuarioRepository.findAll().size() == 1;
+        assertEquals(SINGLE_ENTITY, usuarioRepository.findAll().size(), "O usuário deve ter sido persistido no banco");
     }
 
     @Test
     @DisplayName("Deve buscar usuário por ID")
-    void testBuscarUsuarioPorIdIntegracao() throws Exception {
-        Usuario usuarioCriado = usuarioRepository.save(Usuario.builder()
-                .usuario("usuario1")
-                .senha(passwordEncoder.encode("senha123"))
-                .contaExpirada(false)
-                .contaBloqueada(false)
-                .credenciaisExpiradas(false)
-                .ativo(true)
-                .permissoes(new java.util.ArrayList<>(java.util.List.of(permissao)))
-                .voluntario(voluntario)
-                .build());
+    public void deveBuscarUsuarioPorId() throws Exception {
+        Usuario usuarioCriado = criarUsuario("usuario1", voluntario);
 
         mockMvc.perform(get("/sol-do-amanhecer/api/usuario/" + usuarioCriado.getUuid()))
                 .andExpect(status().isOk())
@@ -133,17 +140,8 @@ class UsuarioControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve listar usuários com paginação")
-    void testListarUsuariosComPaginacao() throws Exception {
-        usuarioRepository.save(Usuario.builder()
-                .usuario("usuario1")
-                .senha(passwordEncoder.encode("senha123"))
-                .contaExpirada(false)
-                .contaBloqueada(false)
-                .credenciaisExpiradas(false)
-                .ativo(true)
-                .permissoes(new java.util.ArrayList<>(java.util.List.of(permissao)))
-                .voluntario(voluntario)
-                .build());
+    public void deveListarUsuariosPaginados() throws Exception {
+        criarUsuario("usuario1", voluntario);
 
         Endereco endereco2 = enderecoRepository.save(Endereco.builder()
                 .logradouro("Rua Teste 2")
@@ -161,16 +159,7 @@ class UsuarioControllerIntegrationTest {
                 .ativo(true)
                 .build());
 
-        usuarioRepository.save(Usuario.builder()
-                .usuario("usuario2")
-                .senha(passwordEncoder.encode("senha123"))
-                .contaExpirada(false)
-                .contaBloqueada(false)
-                .credenciaisExpiradas(false)
-                .ativo(true)
-                .permissoes(new java.util.ArrayList<>(java.util.List.of(permissao)))
-                .voluntario(voluntario2)
-                .build());
+        criarUsuario("usuario2", voluntario2);
 
         mockMvc.perform(get("/sol-do-amanhecer/api/usuario/")
                         .param("page", "0")
@@ -181,17 +170,8 @@ class UsuarioControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve atualizar um usuário")
-    void testAtualizarUsuarioIntegracao() throws Exception {
-        Usuario usuarioCriado = usuarioRepository.save(Usuario.builder()
-                .usuario("usuariooriginal")
-                .senha(passwordEncoder.encode("senha123"))
-                .contaExpirada(false)
-                .contaBloqueada(false)
-                .credenciaisExpiradas(false)
-                .ativo(true)
-                .permissoes(new java.util.ArrayList<>(java.util.List.of(permissao)))
-                .voluntario(voluntario)
-                .build());
+    public void deveAtualizarUsuarioExistente() throws Exception {
+        Usuario usuarioCriado = criarUsuario("usuariooriginal", voluntario);
 
         UsuarioDTO usuarioAtualizado = UsuarioDTO.builder()
                 .usuario("usuarioatualizado")
@@ -210,27 +190,19 @@ class UsuarioControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         Usuario usuarioVerificado = usuarioRepository.findById(usuarioCriado.getUuid()).orElseThrow();
-        assert usuarioVerificado.getUsuario().equals("usuarioatualizado");
+        assertEquals("usuarioatualizado", usuarioVerificado.getUsuario(),
+                "O nome de usuário deve ter sido atualizado");
     }
 
     @Test
     @DisplayName("Deve deletar um usuário")
-    void testDeletarUsuarioIntegracao() throws Exception {
-        Usuario usuarioCriado = usuarioRepository.save(Usuario.builder()
-                .usuario("usuariodeletar")
-                .senha(passwordEncoder.encode("senha123"))
-                .contaExpirada(false)
-                .contaBloqueada(false)
-                .credenciaisExpiradas(false)
-                .ativo(true)
-                .permissoes(new java.util.ArrayList<>(java.util.List.of(permissao)))
-                .voluntario(voluntario)
-                .build());
+    public void deveDesativarUsuarioPorId() throws Exception {
+        Usuario usuarioCriado = criarUsuario("usuariodeletar", voluntario);
 
         mockMvc.perform(delete("/sol-do-amanhecer/api/usuario/remover/" + usuarioCriado.getUuid()))
                 .andExpect(status().isNoContent());
 
         Usuario usuarioVerificado = usuarioRepository.findById(usuarioCriado.getUuid()).orElseThrow();
-        assert !usuarioVerificado.getAtivo();
+        assertFalse(usuarioVerificado.getAtivo(), "O usuário deve estar inativo após remoção");
     }
 }

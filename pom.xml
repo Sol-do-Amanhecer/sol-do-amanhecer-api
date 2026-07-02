@@ -5,14 +5,14 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.1.4</version>
+		<version>3.5.14</version>
 		<relativePath/>
 	</parent>
 	<groupId>br.com.sol-do-amanhecer-api</groupId>
 	<artifactId>sol-do-amanhecer-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>sol-do-amanhecer-api</name>
-	<description>Projeto desenvolvido em parceria com o IFAL e a ONG Sol do Amanhecer para apoio social e fortalecimento comunitário por meio de soluções tecnológicas</description>
+	<description>Projeto desenvolvido em parceria com o IFAL e a ONG Sol 	do Amanhecer para apoio social e fortalecimento comunitário por meio de soluções tecnológicas</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -65,7 +65,7 @@
 		<dependency>
 			<groupId>com.auth0</groupId>
 			<artifactId>java-jwt</artifactId>
-			<version>4.4.0</version>
+			<version>4.5.0</version>
 		</dependency>
 
 		<dependency>
@@ -76,19 +76,17 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>5.4.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.24.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.rest-assured</groupId>
 			<artifactId>rest-assured</artifactId>
-			<version>5.3.2</version>
+			<version>5.5.6</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -100,23 +98,23 @@
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
-			<version>1.5.3.Final</version>
+			<version>1.6.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct-processor</artifactId>
-			<version>1.5.3.Final</version>
+			<version>1.6.3</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.3.0</version>
+			<version>2.8.17</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-			<version>2.3.0</version>
+			<version>2.8.17</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -142,10 +140,39 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.2.5</version>
+				<version>3.5.4</version>
 				<configuration>
 					<skipTests>false</skipTests>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+				<configuration>
+					<excludes>
+						<exclude>br/com/sol_do_amanhecer/SolDoAmanhecerApplication.class</exclude>
+						<exclude>br/com/sol_do_amanhecer/model/dto/**</exclude>
+						<exclude>br/com/sol_do_amanhecer/model/entity/**</exclude>
+						<exclude>br/com/sol_do_amanhecer/shared/constant/**</exclude>
+						<exclude>br/com/sol_do_amanhecer/shared/enums/**</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

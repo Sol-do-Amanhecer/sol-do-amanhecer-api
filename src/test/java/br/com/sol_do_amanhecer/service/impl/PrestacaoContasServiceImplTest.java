@@ -2,10 +2,10 @@ package br.com.sol_do_amanhecer.service.impl;
 
 import br.com.sol_do_amanhecer.model.dto.PrestacaoContasDTO;
 import br.com.sol_do_amanhecer.model.entity.PrestacaoContas;
-import br.com.sol_do_amanhecer.model.mapper.PrestacaoContasMapper;
 import br.com.sol_do_amanhecer.repository.PrestacaoContasRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -64,106 +64,159 @@ class PrestacaoContasServiceImplTest {
                 .build();
     }
 
-    @Test
-    @DisplayName("Deve criar prestação de contas")
-    void testCriarPrestacao() {
-        when(prestacaoRepository.save(any(PrestacaoContas.class))).thenReturn(prestacao);
+    @Nested
+    @DisplayName("criar")
+    class Criar {
 
-        PrestacaoContasDTO resultado = prestacaoService.criar(prestacaoDTO);
+        @Test
+        @DisplayName("Deve criar prestação de contas")
+        void deveCriarPrestacao() {
+            when(prestacaoRepository.save(any(PrestacaoContas.class))).thenReturn(prestacao);
 
-        assertThat(resultado).isNotNull();
-        verify(prestacaoRepository, times(1)).save(any(PrestacaoContas.class));
+            PrestacaoContasDTO resultado = prestacaoService.criar(prestacaoDTO);
+
+            assertThat(resultado).isNotNull();
+            verify(prestacaoRepository, times(1)).save(any(PrestacaoContas.class));
+        }
     }
 
-    @Test
-    @DisplayName("Deve atualizar prestação existente")
-    void testAtualizarPrestacao() {
-        when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.of(prestacao));
-        when(prestacaoRepository.save(any(PrestacaoContas.class))).thenReturn(prestacao);
+    @Nested
+    @DisplayName("atualizar")
+    class Atualizar {
 
-        prestacaoService.atualizar(prestacaoId, prestacaoDTO);
+        @Test
+        @DisplayName("Deve atualizar prestação existente")
+        void deveAtualizarPrestacao() {
+            when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.of(prestacao));
+            when(prestacaoRepository.save(any(PrestacaoContas.class))).thenReturn(prestacao);
 
-        verify(prestacaoRepository, times(1)).findById(prestacaoId);
-        verify(prestacaoRepository, times(1)).save(any(PrestacaoContas.class));
+            prestacaoService.atualizar(prestacaoId, prestacaoDTO);
+
+            verify(prestacaoRepository, times(1)).findById(prestacaoId);
+            verify(prestacaoRepository, times(1)).save(any(PrestacaoContas.class));
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção ao atualizar prestação inexistente")
+        void deveAtualizarPrestacaoInexistente() {
+            when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> prestacaoService.atualizar(prestacaoId, prestacaoDTO))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("Prestação de contas não encontrada");
+        }
     }
 
-    @Test
-    @DisplayName("Deve lançar exceção ao atualizar prestação inexistente")
-    void testAtualizarPrestacaoInexistente() {
-        when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.empty());
+    @Nested
+    @DisplayName("remover")
+    class Remover {
 
-        assertThatThrownBy(() -> prestacaoService.atualizar(prestacaoId, prestacaoDTO))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Prestação de contas não encontrada");
+        @Test
+        @DisplayName("Deve remover prestação")
+        void deveRemoverPrestacao() {
+            when(prestacaoRepository.existsById(prestacaoId)).thenReturn(true);
+
+            prestacaoService.remover(prestacaoId);
+
+            verify(prestacaoRepository, times(1)).deleteById(prestacaoId);
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção ao remover prestação inexistente")
+        void deveRemoverPrestacaoInexistente() {
+            when(prestacaoRepository.existsById(prestacaoId)).thenReturn(false);
+
+            assertThatThrownBy(() -> prestacaoService.remover(prestacaoId))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("Prestação de contas não encontrada");
+        }
     }
 
-    @Test
-    @DisplayName("Deve remover prestação")
-    void testRemoverPrestacao() {
-        when(prestacaoRepository.existsById(prestacaoId)).thenReturn(true);
+    @Nested
+    @DisplayName("buscarPorId")
+    class BuscarPorId {
 
-        prestacaoService.remover(prestacaoId);
+        @Test
+        @DisplayName("Deve buscar prestação por ID")
+        void deveBuscarPrestacaoPorId() {
+            when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.of(prestacao));
 
-        verify(prestacaoRepository, times(1)).deleteById(prestacaoId);
+            PrestacaoContasDTO resultado = prestacaoService.buscarPorId(prestacaoId);
+
+            assertThat(resultado).isNotNull();
+            verify(prestacaoRepository, times(1)).findById(prestacaoId);
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção ao buscar prestação inexistente")
+        void deveBuscarPrestacaoInexistente() {
+            when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> prestacaoService.buscarPorId(prestacaoId))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("Prestação de contas não encontrada");
+        }
     }
 
-    @Test
-    @DisplayName("Deve lançar exceção ao remover prestação inexistente")
-    void testRemoverPrestacaoInexistente() {
-        when(prestacaoRepository.existsById(prestacaoId)).thenReturn(false);
+    @Nested
+    @DisplayName("buscarTodas")
+    class BuscarTodas {
 
-        assertThatThrownBy(() -> prestacaoService.remover(prestacaoId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Prestação de contas não encontrada");
-    }
+        @Test
+        @DisplayName("Deve buscar prestações sem filtros")
+        void deveBuscarPrestacoesSemFiltros() {
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<PrestacaoContas> page = new PageImpl<>(List.of(prestacao), pageable, 1);
 
-    @Test
-    @DisplayName("Deve buscar prestação por ID")
-    void testBuscarPrestacaoPorId() {
-        when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.of(prestacao));
+            when(prestacaoRepository.findAll(pageable)).thenReturn(page);
 
-        PrestacaoContasDTO resultado = prestacaoService.buscarPorId(prestacaoId);
+            Page<PrestacaoContasDTO> resultado = prestacaoService.buscarTodas(null, null, pageable);
 
-        assertThat(resultado).isNotNull();
-        verify(prestacaoRepository, times(1)).findById(prestacaoId);
-    }
+            assertThat(resultado).isNotNull();
+            assertThat(resultado.getContent()).as("O conteúdo paginado deve ter exatamente 1 prestação").hasSize(1);
+            verify(prestacaoRepository, times(1)).findAll(pageable);
+        }
 
-    @Test
-    @DisplayName("Deve lançar exceção ao buscar prestação inexistente")
-    void testBuscarPrestacaoInexistente() {
-        when(prestacaoRepository.findById(prestacaoId)).thenReturn(Optional.empty());
+        @Test
+        @DisplayName("Deve buscar prestações filtradas por período")
+        void deveBuscarPrestacoesFiltroPeríodo() {
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<PrestacaoContas> page = new PageImpl<>(List.of(prestacao), pageable, 1);
 
-        assertThatThrownBy(() -> prestacaoService.buscarPorId(prestacaoId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Prestação de contas não encontrada");
-    }
+            when(prestacaoRepository.findByMesEAno(3, 2026, pageable)).thenReturn(page);
 
-    @Test
-    @DisplayName("Deve buscar prestações sem filtros")
-    void testBuscarPrestacoesSemFiltros() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<PrestacaoContas> page = new PageImpl<>(List.of(prestacao), pageable, 1);
+            Page<PrestacaoContasDTO> resultado = prestacaoService.buscarTodas(3, 2026, pageable);
 
-        when(prestacaoRepository.findAll(pageable)).thenReturn(page);
+            assertThat(resultado).isNotNull();
+            verify(prestacaoRepository, times(1)).findByMesEAno(3, 2026, pageable);
+        }
 
-        Page<PrestacaoContasDTO> resultado = prestacaoService.buscarTodas(null, null, pageable);
+        @Test
+        @DisplayName("Deve buscar prestações filtradas apenas por mês")
+        void deveBuscarPrestacoesFiltroMes() {
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<PrestacaoContas> page = new PageImpl<>(List.of(prestacao), pageable, 1);
 
-        assertThat(resultado).isNotNull();
-        assertThat(resultado.getContent()).hasSize(1);
-        verify(prestacaoRepository, times(1)).findAll(pageable);
-    }
+            when(prestacaoRepository.findByMes(3, pageable)).thenReturn(page);
 
-    @Test
-    @DisplayName("Deve buscar prestações filtradas por período")
-    void testBuscarPrestacoesFiltroPeríodo() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<PrestacaoContas> page = new PageImpl<>(List.of(prestacao), pageable, 1);
+            Page<PrestacaoContasDTO> resultado = prestacaoService.buscarTodas(3, null, pageable);
 
-        when(prestacaoRepository.findByMesEAno(3, 2026, pageable)).thenReturn(page);
+            assertThat(resultado).isNotNull();
+            verify(prestacaoRepository, times(1)).findByMes(3, pageable);
+        }
 
-        Page<PrestacaoContasDTO> resultado = prestacaoService.buscarTodas(3, 2026, pageable);
+        @Test
+        @DisplayName("Deve buscar prestações filtradas apenas por ano")
+        void deveBuscarPrestacoesFiltroAno() {
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<PrestacaoContas> page = new PageImpl<>(List.of(prestacao), pageable, 1);
 
-        assertThat(resultado).isNotNull();
-        verify(prestacaoRepository, times(1)).findByMesEAno(3, 2026, pageable);
+            when(prestacaoRepository.findByAno(2026, pageable)).thenReturn(page);
+
+            Page<PrestacaoContasDTO> resultado = prestacaoService.buscarTodas(null, 2026, pageable);
+
+            assertThat(resultado).isNotNull();
+            verify(prestacaoRepository, times(1)).findByAno(2026, pageable);
+        }
     }
 }

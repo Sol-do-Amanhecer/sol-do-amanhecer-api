@@ -1,6 +1,5 @@
 package br.com.sol_do_amanhecer.controller;
 
-import br.com.sol_do_amanhecer.model.dto.ObjetivoMensalDTO;
 import br.com.sol_do_amanhecer.model.dto.ObjetivoMensalRequestDTO;
 import br.com.sol_do_amanhecer.model.entity.ObjetivoMensal;
 import br.com.sol_do_amanhecer.repository.ObjetivoMensalRepository;
@@ -20,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -29,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @DisplayName("Testes de Integração - ObjetivoMensalController")
 class ObjetivoMensalControllerIntegrationTest {
+
+    private static final int SINGLE_ENTITY = 1;
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,7 +48,7 @@ class ObjetivoMensalControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve criar um objetivo mensal")
-    void testCriarObjetivoIntegracao() throws Exception {
+    public void devePersistirObjetivoAoCriar() throws Exception {
         ObjetivoMensalRequestDTO requestDTO = ObjetivoMensalRequestDTO.builder()
                 .titulo("Objetivo Janeiro")
                 .descricao("Arrecadar fundos para ações sociais")
@@ -63,12 +65,12 @@ class ObjetivoMensalControllerIntegrationTest {
                 .andExpect(jsonPath("$.mes", equalTo("JANEIRO")))
                 .andExpect(jsonPath("$.ano", equalTo(2026)));
 
-        assert objetivoRepository.findAll().size() == 1;
+        assertEquals(SINGLE_ENTITY, objetivoRepository.findAll().size(), "O objetivo deve ter sido persistido no banco");
     }
 
     @Test
     @DisplayName("Deve buscar objetivo por ID")
-    void testBuscarObjetivoPorIdIntegracao() throws Exception {
+    public void deveBuscarObjetivoPorId() throws Exception {
         ObjetivoMensal objetivo = objetivoRepository.save(ObjetivoMensal.builder()
                 .titulo("Objetivo Teste")
                 .descricao("Descrição teste")
@@ -85,7 +87,7 @@ class ObjetivoMensalControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve listar objetivos com paginação")
-    void testListarObjetivosIntegracao() throws Exception {
+    public void deveListarObjetivosPaginados() throws Exception {
         objetivoRepository.save(ObjetivoMensal.builder()
                 .titulo("Objetivo 1")
                 .descricao("Desc 1")
@@ -111,7 +113,7 @@ class ObjetivoMensalControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve atualizar um objetivo")
-    void testAtualizarObjetivoIntegracao() throws Exception {
+    public void deveAtualizarObjetivoExistente() throws Exception {
         ObjetivoMensal objetivo = objetivoRepository.save(ObjetivoMensal.builder()
                 .titulo("Objetivo Original")
                 .descricao("Desc original")
@@ -134,12 +136,13 @@ class ObjetivoMensalControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         ObjetivoMensal objetivoVerificado = objetivoRepository.findById(objetivo.getUuid()).orElseThrow();
-        assert objetivoVerificado.getTitulo().equals("Objetivo Atualizado");
+        assertEquals("Objetivo Atualizado", objetivoVerificado.getTitulo(),
+                "O título do objetivo deve ter sido atualizado");
     }
 
     @Test
     @DisplayName("Deve deletar um objetivo")
-    void testDeletarObjetivoIntegracao() throws Exception {
+    public void deveDeletarObjetivoPorId() throws Exception {
         ObjetivoMensal objetivo = objetivoRepository.save(ObjetivoMensal.builder()
                 .titulo("Objetivo para deletar")
                 .descricao("Desc")
@@ -151,6 +154,7 @@ class ObjetivoMensalControllerIntegrationTest {
         mockMvc.perform(delete("/sol-do-amanhecer/api/objetivo/remover/" + objetivo.getUuid()))
                 .andExpect(status().isNoContent());
 
-        assert objetivoRepository.findById(objetivo.getUuid()).isEmpty();
+        assertTrue(objetivoRepository.findById(objetivo.getUuid()).isEmpty(),
+                "O objetivo deve ter sido removido do banco");
     }
 }

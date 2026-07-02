@@ -1,6 +1,7 @@
 package br.com.sol_do_amanhecer.controller;
 
 import br.com.sol_do_amanhecer.model.dto.PermissaoDTO;
+import br.com.sol_do_amanhecer.model.dto.TrocarSenhaDTO;
 import br.com.sol_do_amanhecer.model.dto.UsuarioDTO;
 import br.com.sol_do_amanhecer.service.UsuarioService;
 import org.junit.jupiter.api.DisplayName;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Collections;
@@ -27,6 +29,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes de UsuarioController")
 public class UsuarioControllerTest {
+
+    private static final int ONE_ELEMENT = 1;
+    private static final int FIRST_ELEMENT_INDEX = 0;
 
     @Mock
     private UsuarioService usuarioService;
@@ -60,9 +65,9 @@ public class UsuarioControllerTest {
 
             ResponseEntity<UsuarioDTO> response = usuarioController.buscarPorId(id);
 
-            assertEquals(200, response.getStatusCode().value());
-            assertEquals(dto, response.getBody());
-            verify(usuarioService, times(1)).buscarPorId(id);
+            assertEquals(HttpStatus.OK.value(), response.getStatusCode().value(), "O status HTTP deve ser 200 OK");
+            assertEquals(dto, response.getBody(), "O corpo deve conter o DTO do usuário buscado");
+            verify(usuarioService).buscarPorId(id);
         }
     }
 
@@ -75,17 +80,17 @@ public class UsuarioControllerTest {
         void buscarTodos_SemFiltro() {
             Pageable pageable = PageRequest.of(0, 10, Sort.by("criadoEm").ascending());
             UsuarioDTO dto = criaUsuarioDTO();
-            Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, 1);
+            Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, ONE_ELEMENT);
 
             when(usuarioService.buscarTodos(null, pageable)).thenReturn(page);
 
             ResponseEntity<Page<UsuarioDTO>> response = usuarioController.buscarTodos(0, 10, null);
 
-            assertEquals(200, response.getStatusCode().value());
-            assertNotNull(response.getBody());
-            assertEquals(1, response.getBody().getTotalElements());
-            assertEquals(dto, response.getBody().getContent().get(0));
-            verify(usuarioService, times(1)).buscarTodos(null, pageable);
+            assertEquals(HttpStatus.OK.value(), response.getStatusCode().value(), "O status HTTP deve ser 200 OK");
+            assertNotNull(response.getBody(), "O corpo da resposta não deve ser nulo");
+            assertEquals(ONE_ELEMENT, response.getBody().getTotalElements(), "A página deve conter exatamente um elemento");
+            assertEquals(dto, response.getBody().getContent().get(FIRST_ELEMENT_INDEX), "O elemento da página deve ser o DTO esperado");
+            verify(usuarioService).buscarTodos(null, pageable);
         }
 
         @Test
@@ -93,17 +98,17 @@ public class UsuarioControllerTest {
         void buscarTodos_ComFiltroAtivo() {
             Pageable pageable = PageRequest.of(0, 10, Sort.by("criadoEm").ascending());
             UsuarioDTO dto = criaUsuarioDTO();
-            Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, 1);
+            Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, ONE_ELEMENT);
 
             when(usuarioService.buscarTodos(true, pageable)).thenReturn(page);
 
             ResponseEntity<Page<UsuarioDTO>> response = usuarioController.buscarTodos(0, 10, true);
 
-            assertEquals(200, response.getStatusCode().value());
-            assertNotNull(response.getBody());
-            assertEquals(1, response.getBody().getTotalElements());
-            assertEquals(dto, response.getBody().getContent().get(0));
-            verify(usuarioService, times(1)).buscarTodos(true, pageable);
+            assertEquals(HttpStatus.OK.value(), response.getStatusCode().value(), "O status HTTP deve ser 200 OK");
+            assertNotNull(response.getBody(), "O corpo da resposta não deve ser nulo");
+            assertEquals(ONE_ELEMENT, response.getBody().getTotalElements(), "A página deve conter exatamente um elemento");
+            assertEquals(dto, response.getBody().getContent().get(FIRST_ELEMENT_INDEX), "O elemento da página deve ser o DTO esperado");
+            verify(usuarioService).buscarTodos(true, pageable);
         }
 
         @Test
@@ -112,17 +117,17 @@ public class UsuarioControllerTest {
             Pageable pageable = PageRequest.of(0, 10, Sort.by("criadoEm").ascending());
             UsuarioDTO dto = criaUsuarioDTO();
             dto.setAtivo(false);
-            Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, 1);
+            Page<UsuarioDTO> page = new PageImpl<>(List.of(dto), pageable, ONE_ELEMENT);
 
             when(usuarioService.buscarTodos(false, pageable)).thenReturn(page);
 
             ResponseEntity<Page<UsuarioDTO>> response = usuarioController.buscarTodos(0, 10, false);
 
-            assertEquals(200, response.getStatusCode().value());
-            assertNotNull(response.getBody());
-            assertEquals(1, response.getBody().getTotalElements());
-            assertEquals(dto, response.getBody().getContent().get(0));
-            verify(usuarioService, times(1)).buscarTodos(false, pageable);
+            assertEquals(HttpStatus.OK.value(), response.getStatusCode().value(), "O status HTTP deve ser 200 OK");
+            assertNotNull(response.getBody(), "O corpo da resposta não deve ser nulo");
+            assertEquals(ONE_ELEMENT, response.getBody().getTotalElements(), "A página deve conter exatamente um elemento");
+            assertEquals(dto, response.getBody().getContent().get(FIRST_ELEMENT_INDEX), "O elemento da página deve ser o DTO esperado");
+            verify(usuarioService).buscarTodos(false, pageable);
         }
     }
 
@@ -138,9 +143,9 @@ public class UsuarioControllerTest {
 
             ResponseEntity<UsuarioDTO> response = usuarioController.criar(input);
 
-            assertEquals(200, response.getStatusCode().value());
-            assertEquals(input, response.getBody());
-            verify(usuarioService, times(1)).criar(input);
+            assertEquals(HttpStatus.OK.value(), response.getStatusCode().value(), "O status HTTP deve ser 200 OK");
+            assertEquals(input, response.getBody(), "O corpo deve conter o DTO do usuário criado");
+            verify(usuarioService).criar(input);
         }
     }
 
@@ -158,9 +163,9 @@ public class UsuarioControllerTest {
 
             ResponseEntity<Void> response = usuarioController.atualizar(id, input);
 
-            assertEquals(200, response.getStatusCode().value());
-            assertNull(response.getBody());
-            verify(usuarioService, times(1)).atualizar(id, input);
+            assertEquals(HttpStatus.OK.value(), response.getStatusCode().value(), "O status HTTP deve ser 200 OK");
+            assertNull(response.getBody(), "O corpo da resposta deve ser nulo para atualizações");
+            verify(usuarioService).atualizar(id, input);
         }
     }
 
@@ -176,9 +181,85 @@ public class UsuarioControllerTest {
 
             ResponseEntity<Void> response = usuarioController.deletar(id);
 
-            assertEquals(204, response.getStatusCode().value());
-            assertNull(response.getBody());
-            verify(usuarioService, times(1)).remover(id);
+            assertEquals(HttpStatus.NO_CONTENT.value(), response.getStatusCode().value(), "O status HTTP deve ser 204 No Content");
+            assertNull(response.getBody(), "O corpo da resposta deve ser nulo para deleções");
+            verify(usuarioService).remover(id);
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH /usuario/{id}/trocar-senha")
+    class TrocarSenhaUsuario {
+
+        @Test
+        @DisplayName("Deve trocar a senha com sucesso e retornar OK")
+        void trocarSenha_Sucesso() {
+            UUID id = UUID.randomUUID();
+            TrocarSenhaDTO dto = new TrocarSenhaDTO("novaSenha123");
+
+            doNothing().when(usuarioService).trocarSenha(id, dto.getSenha());
+
+            ResponseEntity<?> response = usuarioController.trocarSenha(id, dto);
+
+            assertEquals(HttpStatus.OK.value(), response.getStatusCode().value(), "O status HTTP deve ser 200 OK");
+            assertNull(response.getBody(), "O corpo da resposta deve ser nulo para troca de senha bem-sucedida");
+            verify(usuarioService).trocarSenha(id, dto.getSenha());
+        }
+
+        @Test
+        @DisplayName("Deve retornar BAD_REQUEST quando o DTO é nulo")
+        void trocarSenha_DtoNulo() {
+            UUID id = UUID.randomUUID();
+
+            ResponseEntity<?> response = usuarioController.trocarSenha(id, null);
+
+            assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode().value(), "O status HTTP deve ser 400 BAD_REQUEST");
+            assertEquals("Requisição inválida! A senha não pode ser nula ou vazia.", response.getBody(), "Deve retornar mensagem de validação");
+            verify(usuarioService, never()).trocarSenha(any(), any());
+        }
+
+        @Test
+        @DisplayName("Deve retornar BAD_REQUEST quando a senha é nula")
+        void trocarSenha_SenhaNula() {
+            UUID id = UUID.randomUUID();
+            TrocarSenhaDTO dto = new TrocarSenhaDTO(null);
+
+            ResponseEntity<?> response = usuarioController.trocarSenha(id, dto);
+
+            assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode().value(), "O status HTTP deve ser 400 BAD_REQUEST");
+            assertEquals("Requisição inválida! A senha não pode ser nula ou vazia.", response.getBody(), "Deve retornar mensagem de validação");
+            verify(usuarioService, never()).trocarSenha(any(), any());
+        }
+
+        @Test
+        @DisplayName("Deve retornar BAD_REQUEST quando a senha contém apenas espaços em branco")
+        void trocarSenha_SenhaEmBranco() {
+            UUID id = UUID.randomUUID();
+            TrocarSenhaDTO dto = new TrocarSenhaDTO("   ");
+
+            ResponseEntity<?> response = usuarioController.trocarSenha(id, dto);
+
+            assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode().value(), "O status HTTP deve ser 400 BAD_REQUEST");
+            assertEquals("Requisição inválida! A senha não pode ser nula ou vazia.", response.getBody(), "Deve retornar mensagem de validação");
+            verify(usuarioService, never()).trocarSenha(any(), any());
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /usuario/resetar-senha/{username}")
+    class SolicitarResetSenha {
+
+        @Test
+        @DisplayName("Deve solicitar reset de senha com sucesso e retornar OK com mensagem")
+        void solicitarResetSenhaPorUsername_Sucesso() {
+            String username = "usuarioTeste";
+            doNothing().when(usuarioService).enviarEmailRedefinicaoSenhaPorUsername(username);
+
+            ResponseEntity<String> response = usuarioController.solicitarResetSenhaPorUsername(username);
+
+            assertEquals(HttpStatus.OK.value(), response.getStatusCode().value(), "O status HTTP deve ser 200 OK");
+            assertNotNull(response.getBody(), "O corpo da resposta não deve ser nulo");
+            verify(usuarioService).enviarEmailRedefinicaoSenhaPorUsername(username);
         }
     }
 }

@@ -23,7 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -100,7 +99,7 @@ class AutenticacaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve fazer login com credenciais válidas")
-    void testLoginComCredenciaisValidas() throws Exception {
+    public void deveRetornarTokenComCredenciaisValidas() throws Exception {
         mockMvc.perform(post("/sol-do-amanhecer/api/autenticacao/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDTO)))
@@ -113,7 +112,7 @@ class AutenticacaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve retornar 401 com credenciais inválidas")
-    void testLoginComCredenciaisInvalidas() throws Exception {
+    public void deveRetornar401ComCredenciaisInvalidas() throws Exception {
         LoginDTO loginInvalido = new LoginDTO("usuarioteste", "senhaerrada");
 
         mockMvc.perform(post("/sol-do-amanhecer/api/autenticacao/login")
@@ -124,7 +123,7 @@ class AutenticacaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve retornar 400 com usuário nulo")
-    void testLoginComUsuarioNulo() throws Exception {
+    public void deveRetornar400ComUsuarioNulo() throws Exception {
         LoginDTO loginNulo = new LoginDTO(null, "senha123");
 
         mockMvc.perform(post("/sol-do-amanhecer/api/autenticacao/login")
@@ -135,7 +134,7 @@ class AutenticacaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve retornar 400 com senha nula")
-    void testLoginComSenhaNula() throws Exception {
+    public void deveRetornar400ComSenhaNula() throws Exception {
         LoginDTO loginNulo = new LoginDTO("usuarioteste", null);
 
         mockMvc.perform(post("/sol-do-amanhecer/api/autenticacao/login")
@@ -146,7 +145,7 @@ class AutenticacaoControllerIntegrationTest {
 
     @Test
     @DisplayName("Deve retornar 401 com usuário inexistente")
-    void testLoginComUsuarioInexistente() throws Exception {
+    public void deveRetornar401UsuarioInexistente() throws Exception {
         LoginDTO loginInexistente = new LoginDTO("usuarioinexistente", "senha123");
 
         mockMvc.perform(post("/sol-do-amanhecer/api/autenticacao/login")
